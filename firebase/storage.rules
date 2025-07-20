@@ -1,0 +1,120 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    // === HELPER FUNCTIONS ===
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return request.auth != null && request.auth.uid == userId;
+    }
+    
+    function isVerified() {
+      return request.auth != null && request.auth.token.email_verified == true;
+    }
+    
+    function isValidImageUpload() {
+      return request.resource.size < 10 * 1024 * 1024 && // 10MB max
+             request.resource.contentType.matches('image/(jpeg|jpg|png|webp)') &&
+             request.resource.size > 1024; // 1KB min to prevent empty files
+    }
+    
+    function isValidProfileImage() {
+      return request.resource.size < 2 * 1024 * 1024 && // 2MB for profile
+             request.resource.contentType.matches('image/(jpeg|jpg|png|webp)');
+    }
+    
+    function checkUploadQuota() {
+      // Basic rate limiting - could be enhanced with Cloud Functions
+      return true; // Implement server-side quota checking
+    }
+    
+    function isValidFileName() {
+      return resource.name.matches('^[a-zA-Z0-9._-]+$') && 
+             resource.name.size() <= 100;
+    }
+    
+    // === USER PROFILE IMAGES ===
+    match /users/{userId}/profile/{fileName} {
+      allow read: if isAuthenticated() && isVerified();
+      
+      allow write: if isOwner(userId) && 
+                      isVerified() && 
+                      isValidProfileImage() && 
+                      checkUploadQuota();
+      
+      allow delete: if isOwner(userId) && isVerified();
+    }
+    
+    // === WARDROBE ITEM IMAGES ===
+    match /users/{userId}/wardrobe/{itemId}/{fileName} {
+      allow read: if isOwner(userId) && isVerified();
+      
+      allow write: if isOwner(userId) && 
+                      isVerified() && 
+                      isValidImageUpload() && 
+                      checkUploadQuota();
+      
+      allow delete: if isOwner(userId) && isVerified();
+    }
+    
+    // === STYLE ANALYSIS IMAGES ===
+    match /users/{userId}/analyses/{analysisId}/{fileName} {
+      allow read: if isOwner(userId) && isVerified();
+      
+      allow write: if isOwner(userId) && 
+                      isVerified() && 
+                      isValidImageUpload() && 
+                      checkUploadQuota();
+      
+      allow delete: if isOwner(userId) && isVerified();
+    }
+    
+    // === OUTFIT IMAGES ===
+    match /users/{userId}/outfits/{outfitId}/{fileName} {
+      allow read: if isOwner(userId) && isVerified();
+      
+      allow write: if isOwner(userId) && 
+                      isVerified() && 
+                      isValidImageUpload() && 
+                      checkUploadQuota();
+      
+      allow delete: if isOwner(userId) && isVerified();
+    }
+    
+    // === TEMPORARY UPLOADS (for processing) ===
+    match /temp/{userId}/{fileName} {
+      allow read: if isOwner(userId) && isVerified();
+      
+      allow write: if isOwner(userId) && 
+                      isVerified() && 
+                      isValidImageUpload();
+      
+      allow delete: if isOwner(userId) && isVerified();
+    }
+    
+    // === PUBLIC STYLE TEMPLATES (read-only) ===
+    match /templates/{templateId}/{fileName} {
+      allow read: if isAuthenticated() && isVerified();
+      allow write: if false; // Only admins can upload templates
+    }
+    
+    // === ADMIN ASSETS ===
+    match /admin/{document=**} {
+      allow read, write: if false; // No client access to admin assets
+    }
+    
+    // === SYSTEM ASSETS ===
+    match /system/{document=**} {
+      allow read, write: if false; // No client access to system assets
+    }
+    
+    // === DENY ALL OTHER PATHS ===
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

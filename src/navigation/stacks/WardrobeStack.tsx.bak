@@ -1,0 +1,109 @@
+import React from 'react';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+
+import { WardrobeStackParamList, ROUTE_NAMES } from '../types';
+import { useScreenTracking } from '../hooks';
+
+// Import screens (these will be created as placeholder screens)
+import { WardrobeScreen } from '../screens/wardrobe/WardrobeScreen';
+import { AddItemScreen } from '../screens/wardrobe/AddItemScreen';
+import { ItemDetailScreen } from '../screens/wardrobe/ItemDetailScreen';
+import { EditItemScreen } from '../screens/wardrobe/EditItemScreen';
+import { CategoriesScreen } from '../screens/wardrobe/CategoriesScreen';
+import { CategoryDetailScreen } from '../screens/wardrobe/CategoryDetailScreen';
+import { SearchScreen } from '../screens/wardrobe/SearchScreen';
+import { FiltersScreen } from '../screens/wardrobe/FiltersScreen';
+
+const Stack = createNativeStackNavigator<WardrobeStackParamList>();
+
+/**
+ * Wardrobe Stack Navigator
+ * Contains all wardrobe-related screens
+ */
+export function WardrobeStack() {
+  useScreenTracking();
+
+  return (
+    <Stack.Navigator
+      initialRouteName={ROUTE_NAMES.WARDROBE.WARDROBE}
+      screenOptions={{
+        headerShown: false,
+        presentation: 'card',
+        animationTypeForReplace: 'push',
+        gestureEnabled: true,
+        fullScreenGestureEnabled: true,
+        animation: 'slide_from_right',
+      }}
+    >
+      <Stack.Screen
+        name={ROUTE_NAMES.WARDROBE.WARDROBE}
+        component={WardrobeScreen}
+        options={{
+          gestureEnabled: false, // Disable gesture for main wardrobe screen
+        }}
+      />
+      
+      <Stack.Screen
+        name={ROUTE_NAMES.WARDROBE.ADD_ITEM}
+        component={AddItemScreen}
+        options={{
+          presentation: 'modal',
+          animation: 'slide_from_bottom',
+        }}
+      />
+      
+      <Stack.Screen
+        name={ROUTE_NAMES.WARDROBE.ITEM_DETAIL}
+        component={ItemDetailScreen}
+        options={{
+          animation: 'slide_from_right',
+        }}
+      />
+      
+      <Stack.Screen
+        name={ROUTE_NAMES.WARDROBE.EDIT_ITEM}
+        component={EditItemScreen}
+        options={{
+          presentation: 'modal',
+          animation: 'slide_from_bottom',
+        }}
+      />
+      
+      <Stack.Screen
+        name={ROUTE_NAMES.WARDROBE.CATEGORIES}
+        component={CategoriesScreen}
+        options={{
+          animation: 'slide_from_right',
+        }}
+      />
+      
+      <Stack.Screen
+        name={ROUTE_NAMES.WARDROBE.CATEGORY_DETAIL}
+        component={CategoryDetailScreen}
+        options={{
+          animation: 'slide_from_right',
+        }}
+      />
+      
+      <Stack.Screen
+        name={ROUTE_NAMES.WARDROBE.SEARCH}
+        component={SearchScreen}
+        options={{
+          presentation: 'modal',
+          animation: 'slide_from_bottom',
+        }}
+      />
+      
+      <Stack.Screen
+        name={ROUTE_NAMES.WARDROBE.FILTERS}
+        component={FiltersScreen}
+        options={{
+          presentation: 'modal',
+          animation: 'slide_from_bottom',
+        }}
+      />
+    </Stack.Navigator>
+  );
+}
+
+export default WardrobeStack;

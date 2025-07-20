@@ -1,0 +1,750 @@
+# Maestro E2E Test Flows for Identity Domain
+# These test scenarios define end-to-end authentication flows
+
+appId: com.styleai.app
+
+---
+# Test Suite: User Registration Flow
+name: "User Registration - Happy Path"
+tags:
+  - auth
+  - registration
+  - happy-path
+
+steps:
+  # Navigate to registration screen
+  - launchApp
+  - assertVisible: "Welcome to StyleAI"
+  - tapOn: "Get Started"
+  - assertVisible: "Create Account"
+  
+  # Fill registration form
+  - tapOn: "Email"
+  - inputText: "test.user@example.com"
+  - tapOn: "Password"
+  - inputText: "SecurePassword123!"
+  - tapOn: "Confirm Password"
+  - inputText: "SecurePassword123!"
+  - tapOn: "Display Name"
+  - inputText: "Test User"
+  - tapOn: "First Name"
+  - inputText: "Test"
+  - tapOn: "Last Name"
+  - inputText: "User"
+  
+  # Accept terms and privacy
+  - tapOn: "I agree to the Terms of Service"
+  - tapOn: "I agree to the Privacy Policy"
+  
+  # Submit registration
+  - tapOn: "Create Account"
+  
+  # Verify registration success
+  - assertVisible: "Account Created!"
+  - assertVisible: "Please check your email to verify your account"
+  - assertVisible: "Continue"
+  - tapOn: "Continue"
+  
+  # Verify navigation to email verification screen
+  - assertVisible: "Verify Your Email"
+  - assertVisible: "test.user@example.com"
+  - assertVisible: "Resend Verification Email"
+
+---
+# Test Suite: User Registration - Validation Errors
+name: "User Registration - Validation Errors"
+tags:
+  - auth
+  - registration
+  - validation
+  - error-handling
+
+steps:
+  # Navigate to registration screen
+  - launchApp
+  - tapOn: "Get Started"
+  - assertVisible: "Create Account"
+  
+  # Test empty form submission
+  - tapOn: "Create Account"
+  - assertVisible: "Email is required"
+  - assertVisible: "Password is required"
+  - assertVisible: "Display Name is required"
+  
+  # Test invalid email
+  - tapOn: "Email"
+  - inputText: "invalid-email"
+  - tapOn: "Create Account"
+  - assertVisible: "Please enter a valid email address"
+  
+  # Test weak password
+  - clearText
+  - tapOn: "Email"
+  - inputText: "test@example.com"
+  - tapOn: "Password"
+  - inputText: "123"
+  - tapOn: "Create Account"
+  - assertVisible: "Password must be at least 8 characters"
+  
+  # Test password mismatch
+  - clearText
+  - tapOn: "Password"
+  - inputText: "SecurePassword123!"
+  - tapOn: "Confirm Password"
+  - inputText: "DifferentPassword123!"
+  - tapOn: "Create Account"
+  - assertVisible: "Passwords do not match"
+  
+  # Test missing terms acceptance
+  - clearText
+  - tapOn: "Password"
+  - inputText: "SecurePassword123!"
+  - tapOn: "Confirm Password"
+  - inputText: "SecurePassword123!"
+  - tapOn: "Display Name"
+  - inputText: "Test User"
+  - tapOn: "Create Account"
+  - assertVisible: "You must accept the Terms of Service"
+  
+  # Test missing privacy policy acceptance
+  - tapOn: "I agree to the Terms of Service"
+  - tapOn: "Create Account"
+  - assertVisible: "You must accept the Privacy Policy"
+
+---
+# Test Suite: User Registration - Duplicate Email
+name: "User Registration - Duplicate Email"
+tags:
+  - auth
+  - registration
+  - duplicate-email
+  - error-handling
+
+steps:
+  # Navigate to registration screen
+  - launchApp
+  - tapOn: "Get Started"
+  - assertVisible: "Create Account"
+  
+  # Fill form with existing email
+  - tapOn: "Email"
+  - inputText: "existing.user@example.com"
+  - tapOn: "Password"
+  - inputText: "SecurePassword123!"
+  - tapOn: "Confirm Password"
+  - inputText: "SecurePassword123!"
+  - tapOn: "Display Name"
+  - inputText: "Test User"
+  - tapOn: "I agree to the Terms of Service"
+  - tapOn: "I agree to the Privacy Policy"
+  
+  # Submit registration
+  - tapOn: "Create Account"
+  
+  # Verify error message
+  - assertVisible: "Account already exists"
+  - assertVisible: "An account with this email already exists. Would you like to sign in instead?"
+  - assertVisible: "Sign In"
+  - assertVisible: "Try Different Email"
+  
+  # Test navigation to sign in
+  - tapOn: "Sign In"
+  - assertVisible: "Sign In"
+  - assertVisible: "existing.user@example.com"
+
+---
+# Test Suite: User Login - Happy Path
+name: "User Login - Happy Path"
+tags:
+  - auth
+  - login
+  - happy-path
+
+steps:
+  # Navigate to login screen
+  - launchApp
+  - tapOn: "Sign In"
+  - assertVisible: "Welcome Back"
+  
+  # Fill login form
+  - tapOn: "Email"
+  - inputText: "verified.user@example.com"
+  - tapOn: "Password"
+  - inputText: "SecurePassword123!"
+  
+  # Optional: Test remember me
+  - tapOn: "Remember Me"
+  
+  # Submit login
+  - tapOn: "Sign In"
+  
+  # Verify successful login
+  - assertVisible: "Welcome back!"
+  - assertVisible: "Home"
+  - assertVisible: "Profile"
+  - assertVisible: "Styling"
+  - assertVisible: "Wardrobe"
+  
+  # Verify user is on home screen
+  - assertVisible: "Good morning, User!"
+  - assertVisible: "Style Suggestions"
+  - assertVisible: "Recent Outfits"
+
+---
+# Test Suite: User Login - Invalid Credentials
+name: "User Login - Invalid Credentials"
+tags:
+  - auth
+  - login
+  - invalid-credentials
+  - error-handling
+
+steps:
+  # Navigate to login screen
+  - launchApp
+  - tapOn: "Sign In"
+  - assertVisible: "Welcome Back"
+  
+  # Test empty form
+  - tapOn: "Sign In"
+  - assertVisible: "Email is required"
+  - assertVisible: "Password is required"
+  
+  # Test invalid email format
+  - tapOn: "Email"
+  - inputText: "invalid-email"
+  - tapOn: "Password"
+  - inputText: "password"
+  - tapOn: "Sign In"
+  - assertVisible: "Please enter a valid email address"
+  
+  # Test non-existent user
+  - clearText
+  - tapOn: "Email"
+  - inputText: "nonexistent@example.com"
+  - tapOn: "Password"
+  - inputText: "SecurePassword123!"
+  - tapOn: "Sign In"
+  - assertVisible: "Invalid email or password"
+  
+  # Test wrong password
+  - clearText
+  - tapOn: "Email"
+  - inputText: "verified.user@example.com"
+  - tapOn: "Password"
+  - inputText: "WrongPassword123!"
+  - tapOn: "Sign In"
+  - assertVisible: "Invalid email or password"
+
+---
+# Test Suite: User Login - Account Lockout
+name: "User Login - Account Lockout"
+tags:
+  - auth
+  - login
+  - account-lockout
+  - security
+
+steps:
+  # Navigate to login screen
+  - launchApp
+  - tapOn: "Sign In"
+  - assertVisible: "Welcome Back"
+  
+  # Attempt multiple failed logins
+  - tapOn: "Email"
+  - inputText: "test.user@example.com"
+  
+  # First failed attempt
+  - tapOn: "Password"
+  - inputText: "WrongPassword1!"
+  - tapOn: "Sign In"
+  - assertVisible: "Invalid email or password"
+  
+  # Second failed attempt
+  - clearText
+  - tapOn: "Password"
+  - inputText: "WrongPassword2!"
+  - tapOn: "Sign In"
+  - assertVisible: "Invalid email or password"
+  
+  # Third failed attempt
+  - clearText
+  - tapOn: "Password"
+  - inputText: "WrongPassword3!"
+  - tapOn: "Sign In"
+  - assertVisible: "Invalid email or password"
+  
+  # Fourth failed attempt
+  - clearText
+  - tapOn: "Password"
+  - inputText: "WrongPassword4!"
+  - tapOn: "Sign In"
+  - assertVisible: "Invalid email or password"
+  
+  # Fifth failed attempt should trigger lockout
+  - clearText
+  - tapOn: "Password"
+  - inputText: "WrongPassword5!"
+  - tapOn: "Sign In"
+  - assertVisible: "Account Temporarily Locked"
+  - assertVisible: "Too many failed login attempts. Please try again in 15 minutes or reset your password."
+  - assertVisible: "Reset Password"
+  - assertVisible: "Try Again Later"
+
+---
+# Test Suite: User Login - Unverified Email
+name: "User Login - Unverified Email"
+tags:
+  - auth
+  - login
+  - unverified-email
+  - email-verification
+
+steps:
+  # Navigate to login screen
+  - launchApp
+  - tapOn: "Sign In"
+  - assertVisible: "Welcome Back"
+  
+  # Login with unverified account
+  - tapOn: "Email"
+  - inputText: "unverified.user@example.com"
+  - tapOn: "Password"
+  - inputText: "SecurePassword123!"
+  - tapOn: "Sign In"
+  
+  # Verify email verification required
+  - assertVisible: "Email Verification Required"
+  - assertVisible: "Please verify your email address before signing in"
+  - assertVisible: "unverified.user@example.com"
+  - assertVisible: "Resend Verification Email"
+  - assertVisible: "Change Email"
+  
+  # Test resend verification
+  - tapOn: "Resend Verification Email"
+  - assertVisible: "Verification email sent!"
+  - assertVisible: "Check your inbox for a new verification email"
+
+---
+# Test Suite: Password Reset Flow
+name: "Password Reset - Happy Path"
+tags:
+  - auth
+  - password-reset
+  - happy-path
+
+steps:
+  # Navigate to password reset
+  - launchApp
+  - tapOn: "Sign In"
+  - tapOn: "Forgot Password?"
+  - assertVisible: "Reset Password"
+  - assertVisible: "Enter your email address and we'll send you a link to reset your password"
+  
+  # Enter email
+  - tapOn: "Email"
+  - inputText: "verified.user@example.com"
+  - tapOn: "Send Reset Link"
+  
+  # Verify success message
+  - assertVisible: "Reset Link Sent!"
+  - assertVisible: "Check your email for password reset instructions"
+  - assertVisible: "verified.user@example.com"
+  - assertVisible: "Resend Link"
+  - assertVisible: "Back to Sign In"
+  
+  # Test navigation back to sign in
+  - tapOn: "Back to Sign In"
+  - assertVisible: "Welcome Back"
+
+---
+# Test Suite: Password Reset - Invalid Email
+name: "Password Reset - Invalid Email"
+tags:
+  - auth
+  - password-reset
+  - invalid-email
+  - error-handling
+
+steps:
+  # Navigate to password reset
+  - launchApp
+  - tapOn: "Sign In"
+  - tapOn: "Forgot Password?"
+  - assertVisible: "Reset Password"
+  
+  # Test empty email
+  - tapOn: "Send Reset Link"
+  - assertVisible: "Email is required"
+  
+  # Test invalid email format
+  - tapOn: "Email"
+  - inputText: "invalid-email"
+  - tapOn: "Send Reset Link"
+  - assertVisible: "Please enter a valid email address"
+  
+  # Test non-existent email
+  - clearText
+  - tapOn: "Email"
+  - inputText: "nonexistent@example.com"
+  - tapOn: "Send Reset Link"
+  - assertVisible: "No account found"
+  - assertVisible: "No account found with this email address"
+  - assertVisible: "Try Different Email"
+  - assertVisible: "Create Account"
+
+---
+# Test Suite: Email Verification Flow
+name: "Email Verification - Happy Path"
+tags:
+  - auth
+  - email-verification
+  - happy-path
+
+steps:
+  # Start from email verification screen
+  - launchApp
+  - tapOn: "Sign In"
+  - tapOn: "Email"
+  - inputText: "unverified.user@example.com"
+  - tapOn: "Password"
+  - inputText: "SecurePassword123!"
+  - tapOn: "Sign In"
+  - assertVisible: "Email Verification Required"
+  
+  # Simulate email verification (in real app, this would be done via deep link)
+  - tapOn: "I've verified my email"
+  - assertVisible: "Email Verified!"
+  - assertVisible: "Your email has been successfully verified"
+  - assertVisible: "Continue to App"
+  
+  # Continue to app
+  - tapOn: "Continue to App"
+  - assertVisible: "Welcome!"
+  - assertVisible: "Home"
+
+---
+# Test Suite: User Logout Flow
+name: "User Logout - Happy Path"
+tags:
+  - auth
+  - logout
+  - happy-path
+
+steps:
+  # Login first
+  - launchApp
+  - tapOn: "Sign In"
+  - tapOn: "Email"
+  - inputText: "verified.user@example.com"
+  - tapOn: "Password"
+  - inputText: "SecurePassword123!"
+  - tapOn: "Sign In"
+  - assertVisible: "Home"
+  
+  # Navigate to profile
+  - tapOn: "Profile"
+  - assertVisible: "Profile"
+  - assertVisible: "verified.user@example.com"
+  
+  # Access logout
+  - tapOn: "Settings"
+  - assertVisible: "Account Settings"
+  - tapOn: "Sign Out"
+  
+  # Confirm logout
+  - assertVisible: "Sign Out?"
+  - assertVisible: "Are you sure you want to sign out?"
+  - assertVisible: "Cancel"
+  - assertVisible: "Sign Out"
+  - tapOn: "Sign Out"
+  
+  # Verify logout success
+  - assertVisible: "Welcome to StyleAI"
+  - assertVisible: "Get Started"
+  - assertVisible: "Sign In"
+
+---
+# Test Suite: Profile Update Flow
+name: "Profile Update - Happy Path"
+tags:
+  - profile
+  - update
+  - happy-path
+
+steps:
+  # Login first
+  - launchApp
+  - tapOn: "Sign In"
+  - tapOn: "Email"
+  - inputText: "verified.user@example.com"
+  - tapOn: "Password"
+  - inputText: "SecurePassword123!"
+  - tapOn: "Sign In"
+  - assertVisible: "Home"
+  
+  # Navigate to profile
+  - tapOn: "Profile"
+  - assertVisible: "Profile"
+  - tapOn: "Edit Profile"
+  - assertVisible: "Edit Profile"
+  
+  # Update profile information
+  - tapOn: "Display Name"
+  - clearText
+  - inputText: "Updated User Name"
+  - tapOn: "Bio"
+  - inputText: "This is my updated bio"
+  - tapOn: "Location"
+  - inputText: "New York, NY"
+  
+  # Save changes
+  - tapOn: "Save Changes"
+  - assertVisible: "Profile Updated!"
+  - assertVisible: "Your profile has been successfully updated"
+  
+  # Verify changes
+  - assertVisible: "Updated User Name"
+  - assertVisible: "This is my updated bio"
+  - assertVisible: "New York, NY"
+
+---
+# Test Suite: Profile Update - Validation Errors
+name: "Profile Update - Validation Errors"
+tags:
+  - profile
+  - update
+  - validation
+  - error-handling
+
+steps:
+  # Login and navigate to edit profile
+  - launchApp
+  - tapOn: "Sign In"
+  - tapOn: "Email"
+  - inputText: "verified.user@example.com"
+  - tapOn: "Password"
+  - inputText: "SecurePassword123!"
+  - tapOn: "Sign In"
+  - tapOn: "Profile"
+  - tapOn: "Edit Profile"
+  
+  # Test empty display name
+  - tapOn: "Display Name"
+  - clearText
+  - tapOn: "Save Changes"
+  - assertVisible: "Display name is required"
+  
+  # Test display name too long
+  - tapOn: "Display Name"
+  - inputText: "This is a very long display name that exceeds the maximum allowed length of one hundred characters and should trigger a validation error"
+  - tapOn: "Save Changes"
+  - assertVisible: "Display name must be less than 100 characters"
+  
+  # Test bio too long
+  - tapOn: "Display Name"
+  - clearText
+  - inputText: "Valid Name"
+  - tapOn: "Bio"
+  - inputText: "This is a very long bio that exceeds the maximum allowed length. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
+  - tapOn: "Save Changes"
+  - assertVisible: "Bio must be less than 500 characters"
+
+---
+# Test Suite: Navigation Flow
+name: "Navigation - Authenticated User"
+tags:
+  - navigation
+  - authenticated
+  - happy-path
+
+steps:
+  # Login first
+  - launchApp
+  - tapOn: "Sign In"
+  - tapOn: "Email"
+  - inputText: "verified.user@example.com"
+  - tapOn: "Password"
+  - inputText: "SecurePassword123!"
+  - tapOn: "Sign In"
+  - assertVisible: "Home"
+  
+  # Test navigation to all main screens
+  - tapOn: "Styling"
+  - assertVisible: "Style Analysis"
+  - assertVisible: "Get Style Suggestions"
+  
+  - tapOn: "Wardrobe"
+  - assertVisible: "My Wardrobe"
+  - assertVisible: "Add Item"
+  
+  - tapOn: "Profile"
+  - assertVisible: "Profile"
+  - assertVisible: "verified.user@example.com"
+  
+  - tapOn: "Home"
+  - assertVisible: "Good morning, User!"
+  
+  # Test deep navigation
+  - tapOn: "Profile"
+  - tapOn: "Settings"
+  - assertVisible: "Account Settings"
+  - assertVisible: "Privacy Settings"
+  - assertVisible: "Notification Settings"
+  
+  # Test back navigation
+  - tapOn: "Back"
+  - assertVisible: "Profile"
+
+---
+# Test Suite: Accessibility Testing
+name: "Accessibility - Authentication Flows"
+tags:
+  - accessibility
+  - a11y
+  - auth
+
+steps:
+  # Test screen reader labels
+  - launchApp
+  - assertVisible: 
+      text: "Get Started"
+      accessibilityLabel: "Get Started button, tap to create an account"
+  - assertVisible:
+      text: "Sign In"
+      accessibilityLabel: "Sign In button, tap to sign in to your account"
+  
+  # Test registration form accessibility
+  - tapOn: "Get Started"
+  - assertVisible:
+      text: "Email"
+      accessibilityLabel: "Email address input field"
+  - assertVisible:
+      text: "Password"
+      accessibilityLabel: "Password input field"
+  - assertVisible:
+      text: "Create Account"
+      accessibilityLabel: "Create Account button, tap to register"
+  
+  # Test error message accessibility
+  - tapOn: "Create Account"
+  - assertVisible:
+      text: "Email is required"
+      accessibilityLabel: "Error: Email is required"
+
+---
+# Test Suite: Performance Testing
+name: "Performance - Authentication Flows"
+tags:
+  - performance
+  - auth
+
+steps:
+  # Test app launch time
+  - launchApp
+  - assertVisible: "Welcome to StyleAI"
+    timeout: 3000
+  
+  # Test registration performance
+  - tapOn: "Get Started"
+  - assertVisible: "Create Account"
+    timeout: 1000
+  
+  # Fill form quickly
+  - tapOn: "Email"
+  - inputText: "perf.test@example.com"
+  - tapOn: "Password"
+  - inputText: "SecurePassword123!"
+  - tapOn: "Confirm Password"
+  - inputText: "SecurePassword123!"
+  - tapOn: "Display Name"
+  - inputText: "Performance Test"
+  - tapOn: "I agree to the Terms of Service"
+  - tapOn: "I agree to the Privacy Policy"
+  
+  # Test registration submission time
+  - tapOn: "Create Account"
+  - assertVisible: "Account Created!"
+    timeout: 5000
+  
+  # Test login performance
+  - tapOn: "Continue"
+  - tapOn: "Sign In Instead"
+  - tapOn: "Email"
+  - inputText: "verified.user@example.com"
+  - tapOn: "Password"
+  - inputText: "SecurePassword123!"
+  - tapOn: "Sign In"
+  - assertVisible: "Home"
+    timeout: 3000
+
+---
+# Test Suite: Network Error Handling
+name: "Network Errors - Authentication Flows"
+tags:
+  - network
+  - error-handling
+  - auth
+
+steps:
+  # Test offline registration
+  - setNetworkCondition: offline
+  - launchApp
+  - tapOn: "Get Started"
+  - tapOn: "Email"
+  - inputText: "offline.test@example.com"
+  - tapOn: "Password"
+  - inputText: "SecurePassword123!"
+  - tapOn: "Confirm Password"
+  - inputText: "SecurePassword123!"
+  - tapOn: "Display Name"
+  - inputText: "Offline Test"
+  - tapOn: "I agree to the Terms of Service"
+  - tapOn: "I agree to the Privacy Policy"
+  - tapOn: "Create Account"
+  
+  # Verify offline error
+  - assertVisible: "No Internet Connection"
+  - assertVisible: "Please check your internet connection and try again"
+  - assertVisible: "Retry"
+  - assertVisible: "Save for Later"
+  
+  # Test network recovery
+  - setNetworkCondition: online
+  - tapOn: "Retry"
+  - assertVisible: "Account Created!"
+    timeout: 10000
+
+---
+# Test Suite: Security Testing
+name: "Security - Authentication Flows"
+tags:
+  - security
+  - auth
+
+steps:
+  # Test password visibility toggle
+  - launchApp
+  - tapOn: "Sign In"
+  - tapOn: "Password"
+  - inputText: "SecurePassword123!"
+  - assertVisible: "••••••••••••••••••"
+  
+  # Toggle password visibility
+  - tapOn: "Show Password"
+  - assertVisible: "SecurePassword123!"
+  - tapOn: "Hide Password"
+  - assertVisible: "••••••••••••••••••"
+  
+  # Test auto-logout on background
+  - tapOn: "Email"
+  - inputText: "verified.user@example.com"
+  - tapOn: "Sign In"
+  - assertVisible: "Home"
+  
+  # Simulate app backgrounding
+  - sendToBackground: 300000  # 5 minutes
+  - assertVisible: "Session Expired"
+  - assertVisible: "For your security, you have been signed out"
+  - assertVisible: "Sign In Again"

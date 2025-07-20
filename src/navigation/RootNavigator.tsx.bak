@@ -1,0 +1,181 @@
+import React, { useEffect, useMemo } from 'react';
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+
+import { useAppStore } from '@/app/store';
+import { 
+  useAuthAwareNavigation, 
+  useNavigationStateHandler, 
+  useDeepLinkNavigation,
+} from './hooks';
+import { RootStackParamList, NAVIGATION_CONFIG } from './types';
+import { AuthStack } from './AuthStack';
+import { OnboardingStack } from './OnboardingStack';
+import { AppStack } from './AppStack';
+import { LoadingScreen } from './screens/LoadingScreen';
+import { ErrorBoundary } from './components/ErrorBoundary';
+
+const Stack = createNativeStackNavigator<RootStackParamList>();
+
+/**
+ * Root Navigator Component
+ * Handles the main navigation structure and authentication flow
+ */
+export function RootNavigator() {
+  const { auth, app, recordAppStart } = useAppStore();
+  const { determineInitialRoute } = useAuthAwareNavigation();
+  const { handleNavigationStateChange } = useNavigationStateHandler();
+  const { handleDeepLink } = useDeepLinkNavigation();
+
+  // Record app start time
+  useEffect(() => {
+    recordAppStart();
+  }, [recordAppStart]);
+
+  // Determine initial route based on auth and onboarding state
+  const initialRouteName = useMemo(() => {
+    return determineInitialRoute();
+  }, [determineInitialRoute]);
+
+  // Show loading screen while checking auth state
+  if (auth.isLoading) {
+    return <LoadingScreen />;
+  }
+
+  return (
+    <SafeAreaProvider>
+      <ErrorBoundary>
+        <NavigationContainer
+          linking={NAVIGATION_CONFIG.DEEP_LINKING}
+          onStateChange={handleNavigationStateChange}
+          onReady={() => {
+            // Navigation is ready, record initial screen
+            console.log('Navigation ready');
+          }}
+          fallback={<LoadingScreen />}
+        >
+          <Stack.Navigator
+            initialRouteName={initialRouteName}
+            screenOptions={{
+              headerShown: false,
+              presentation: 'card',
+              animationTypeForReplace: 'push',
+            }}
+          >
+            <Stack.Screen 
+              name="AuthStack" 
+              component={AuthStack}
+              options={{
+                gestureEnabled: false,
+                animationTypeForReplace: 'pop',
+              }}
+            />
+            <Stack.Screen 
+              name="OnboardingStack" 
+              component={OnboardingStack}
+              options={{
+                gestureEnabled: false,
+                animationTypeForReplace: 'push',
+              }}
+            />
+            <Stack.Screen 
+              name="AppStack" 
+              component={AppStack}
+              options={{
+                gestureEnabled: false,
+                animationTypeForReplace: 'push',
+              }}
+            />
+          </Stack.Navigator>
+        </NavigationContainer>
+      </ErrorBoundary>
+    </SafeAreaProvider>
+  );
+}
+
+/**
+ * Navigation Container with Auth State Listener
+ * Wrapper component that listens to auth state changes
+ */
+export function AuthAwareNavigationContainer({ children }: { children: React.ReactNode }) {
+  const { auth, app } = useAppStore();
+  const { handleAuthStateChange, handleOnboardingStateChange } = useAuthAwareNavigation();
+
+  // Listen to auth state changes
+  useEffect(() => {
+    handleAuthStateChange(auth.isAuthenticated);
+  }, [auth.isAuthenticated, handleAuthStateChange]);
+
+  // Listen to onboarding state changes
+  useEffect(() => {
+    handleOnboardingStateChange(app.onboardingCompleted);
+  }, [app.onboardingCompleted, handleOnboardingStateChange]);
+
+  return <>{children}</>;
+}
+
+/**
+ * Navigation Performance Monitor
+ * Tracks navigation performance for optimization
+ */
+export function NavigationPerformanceMonitor() {
+  const { handleNavigationStateChange } = useNavigationStateHandler();
+
+  useEffect(() => {
+    const startTime = Date.now();
+    
+    const handleStateChange = (state: any) => {
+      const endTime = Date.now();
+      const duration = endTime - startTime;
+      
+      // Log slow navigation
+      if (duration > 1000) {
+        const currentRoute = NavigationStateUtils.getCurrentRouteName(state);
+        console.warn(`Slow navigation detected: ${currentRoute} took ${duration}ms`);
+      }
+      
+      handleNavigationStateChange(state);
+    };
+
+    return () => {
+      // Cleanup if needed
+    };
+  }, [handleNavigationStateChange]);
+
+  return null;
+}
+
+/**
+ * Navigation Analytics Provider
+ * Provides navigation analytics throughout the app
+ */
+export function NavigationAnalyticsProvider({ children }: { children: React.ReactNode }) {
+  const { app } = useAppStore();
+
+  useEffect(() => {
+    // Initialize analytics if enabled
+    if (app.features.analyticsEnabled) {
+      console.log('Navigation analytics initialized');
+    }
+  }, [app.features.analyticsEnabled]);
+
+  return <>{children}</>;
+}
+
+/**
+ * Main Navigation Provider
+ * Combines all navigation providers and components
+ */
+export function NavigationProvider() {
+  return (
+    <NavigationAnalyticsProvider>
+      <AuthAwareNavigationContainer>
+        <NavigationPerformanceMonitor />
+        <RootNavigator />
+      </AuthAwareNavigationContainer>
+    </NavigationAnalyticsProvider>
+  );
+}
+
+export default RootNavigator;

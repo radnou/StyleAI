@@ -1,0 +1,234 @@
+name: Scheduled Maintenance
+
+on:
+  schedule:
+    # Run every Monday at 9 AM UTC
+    - cron: '0 9 * * 1'
+  workflow_dispatch:
+
+jobs:
+  dependency-updates:
+    name: Check Dependency Updates
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+
+      - name: Check for updates
+        run: |
+          npx npm-check-updates --format json > updates.json
+          
+      - name: Create update report
+        run: |
+          node -e "
+          const updates = require('./updates.json');
+          const hasUpdates = Object.keys(updates).length > 0;
+          
+          if (hasUpdates) {
+            console.log('📦 Available dependency updates:');
+            Object.entries(updates).forEach(([pkg, info]) => {
+              console.log(\`  - \${pkg}: \${info.current} → \${info.latest}\`);
+            });
+          } else {
+            console.log('✅ All dependencies are up to date!');
+          }
+          "
+
+  security-audit:
+    name: Weekly Security Audit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run security audit
+        run: |
+          npm audit --json > audit-report.json || true
+          
+      - name: Analyze security report
+        run: |
+          node -e "
+          const report = require('./audit-report.json');
+          const vulnerabilities = report.metadata.vulnerabilities;
+          
+          console.log('🔒 Security Audit Report:');
+          console.log(\`  Critical: \${vulnerabilities.critical}\`);
+          console.log(\`  High: \${vulnerabilities.high}\`);
+          console.log(\`  Moderate: \${vulnerabilities.moderate}\`);
+          console.log(\`  Low: \${vulnerabilities.low}\`);
+          
+          if (vulnerabilities.critical > 0 || vulnerabilities.high > 0) {
+            console.error('❌ Critical or high vulnerabilities found!');
+            process.exit(1);
+          }
+          "
+
+      - name: Upload audit report
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-audit-${{ github.run_id }}
+          path: audit-report.json
+          retention-days: 30
+
+  performance-baseline:
+    name: Update Performance Baselines
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run performance tests
+        run: npm run test:performance || true
+
+      - name: Update baselines
+        run: |
+          mkdir -p performance-baselines
+          cp performance-results/report-*.json performance-baselines/baseline-$(date +%Y%m%d).json || true
+
+      - name: Create PR if changes
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: 'chore: update performance baselines'
+          title: 'Update Performance Baselines'
+          body: |
+            This PR updates the performance baselines based on the latest measurements.
+            
+            Please review the changes to ensure they are acceptable.
+          branch: chore/update-performance-baselines
+          delete-branch: true
+
+  cleanup:
+    name: Cleanup Old Artifacts
+    runs-on: ubuntu-latest
+    steps:
+      - name: Delete old artifacts
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const daysToKeep = 30;
+            const ms_per_day = 24 * 60 * 60 * 1000;
+            const now = Date.now();
+            const cutoff = now - (daysToKeep * ms_per_day);
+            
+            const artifacts = await github.rest.actions.listArtifactsForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              per_page: 100,
+            });
+            
+            let deleted = 0;
+            for (const artifact of artifacts.data.artifacts) {
+              const createdAt = Date.parse(artifact.created_at);
+              if (createdAt < cutoff) {
+                await github.rest.actions.deleteArtifact({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  artifact_id: artifact.id,
+                });
+                deleted++;
+              }
+            }
+            
+            console.log(`Deleted ${deleted} artifacts older than ${daysToKeep} days`);
+
+  health-check:
+    name: Repository Health Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check branch protection
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const branches = ['master', 'develop'];
+            
+            for (const branch of branches) {
+              try {
+                const protection = await github.rest.repos.getBranchProtection({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  branch: branch,
+                });
+                console.log(`✅ ${branch} branch is protected`);
+              } catch (error) {
+                console.log(`⚠️ ${branch} branch is not protected`);
+              }
+            }
+
+      - name: Check stale issues and PRs
+        uses: actions/stale@v9
+        with:
+          days-before-issue-stale: 30
+          days-before-pr-stale: 14
+          days-before-close: 7
+          stale-issue-message: 'This issue has been automatically marked as stale.'
+          stale-pr-message: 'This PR has been automatically marked as stale.'
+          stale-issue-label: 'stale'
+          stale-pr-label: 'stale'
+
+  notify-summary:
+    name: Send Maintenance Summary
+    runs-on: ubuntu-latest
+    needs: [dependency-updates, security-audit, performance-baseline, cleanup, health-check]
+    if: always()
+    steps:
+      - name: Generate summary
+        run: |
+          echo "# 🔧 Weekly Maintenance Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Job Results" >> $GITHUB_STEP_SUMMARY
+          echo "- Dependency Updates: ${{ needs.dependency-updates.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Security Audit: ${{ needs.security-audit.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Performance Baseline: ${{ needs.performance-baseline.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Cleanup: ${{ needs.cleanup.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Health Check: ${{ needs.health-check.result }}" >> $GITHUB_STEP_SUMMARY
+
+      - name: Send Slack notification
+        if: env.SLACK_WEBHOOK != ''
+        uses: 8398a7/action-slack@v3
+        with:
+          status: custom
+          custom_payload: |
+            {
+              text: "Weekly Maintenance Complete",
+              attachments: [{
+                color: "${{ contains(needs.*.result, 'failure') && 'danger' || 'good' }}",
+                fields: [
+                  { title: "Dependency Updates", value: "${{ needs.dependency-updates.result }}", short: true },
+                  { title: "Security Audit", value: "${{ needs.security-audit.result }}", short: true },
+                  { title: "Performance", value: "${{ needs.performance-baseline.result }}", short: true },
+                  { title: "Health Check", value: "${{ needs.health-check.result }}", short: true }
+                ]
+              }]
+            }
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}

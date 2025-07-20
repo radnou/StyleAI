@@ -1,6 +1,35 @@
 {
   "extends": "expo/tsconfig.base",
   "compilerOptions": {
-    "strict": true
-  }
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "allowSyntheticDefaultImports": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"],
+      "@core/*": ["src/core/*"],
+      "@features/*": ["src/features/*"],
+      "@navigation/*": ["src/navigation/*"]
+    }
+  },
+  "exclude": [
+    "firebase/functions/**/*",
+    "tamagui.config.ts",
+    "jest.setup.js",
+    "jest.config.js",
+    "jest.simple.config.js",
+    "e2e/**/*",
+    "**/*.test.js",
+    "**/*.spec.js",
+    "**/__tests__/**/*",
+    "scripts/**/*",
+    "fix-icons.js"
+  ]
 }

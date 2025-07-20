@@ -1,0 +1,74 @@
+import React from 'react';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+
+import { HomeStackParamList, ROUTE_NAMES } from '../types';
+import { useScreenTracking } from '../hooks';
+
+// Import screens
+import { 
+  HomeScreen,
+  AnalyticsScreen,
+  NotificationsScreen,
+  SettingsScreen
+} from '@/screens/app/home';
+
+const Stack = createNativeStackNavigator<HomeStackParamList>();
+
+/**
+ * Home Stack Navigator
+ * Contains all home-related screens
+ */
+export function HomeStack() {
+  useScreenTracking();
+
+  return (
+    <Stack.Navigator
+      initialRouteName={ROUTE_NAMES.HOME.HOME}
+      screenOptions={{
+        headerShown: false,
+        presentation: 'card',
+        animationTypeForReplace: 'push',
+        gestureEnabled: true,
+        fullScreenGestureEnabled: true,
+        animation: 'slide_from_right',
+      }}
+    >
+      <Stack.Screen
+        name={ROUTE_NAMES.HOME.HOME}
+        component={HomeScreen}
+        options={{
+          gestureEnabled: false, // Disable gesture for main home screen
+        }}
+      />
+      
+      <Stack.Screen
+        name={ROUTE_NAMES.HOME.ANALYTICS}
+        component={AnalyticsScreen}
+        options={{
+          presentation: 'modal',
+          animation: 'slide_from_bottom',
+        }}
+      />
+      
+      <Stack.Screen
+        name={ROUTE_NAMES.HOME.NOTIFICATIONS}
+        component={NotificationsScreen}
+        options={{
+          presentation: 'modal',
+          animation: 'slide_from_bottom',
+        }}
+      />
+      
+      <Stack.Screen
+        name={ROUTE_NAMES.HOME.SETTINGS}
+        component={SettingsScreen}
+        options={{
+          presentation: 'modal',
+          animation: 'slide_from_bottom',
+        }}
+      />
+    </Stack.Navigator>
+  );
+}
+
+export default HomeStack;

@@ -1,0 +1,12 @@
+node_modules/
+.expo/
+dist/
+build/
+coverage/
+*.lock
+*.log
+.git/
+.DS_Store
+android/
+ios/
+*.md

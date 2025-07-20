@@ -1,0 +1,287 @@
+name: CD Pipeline
+
+on:
+  push:
+    branches: [master]
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - development
+          - staging
+          - production
+
+env:
+  NODE_VERSION: '20.x'
+
+jobs:
+  prepare-release:
+    name: Prepare Release
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      environment: ${{ steps.environment.outputs.environment }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Determine version
+        id: version
+        run: |
+          if [[ "${{ github.ref }}" == refs/tags/* ]]; then
+            VERSION=${GITHUB_REF#refs/tags/}
+          else
+            VERSION=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+            VERSION="${VERSION}-$(git rev-parse --short HEAD)"
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Determine environment
+        id: environment
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            ENV="${{ github.event.inputs.environment }}"
+          elif [[ "${{ github.ref }}" == refs/tags/* ]]; then
+            ENV="production"
+          else
+            ENV="staging"
+          fi
+          echo "environment=$ENV" >> $GITHUB_OUTPUT
+
+  build-expo:
+    name: Build Expo App
+    runs-on: ubuntu-latest
+    needs: prepare-release
+    strategy:
+      matrix:
+        platform: [ios, android]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Setup Expo
+        uses: expo/expo-github-action@v8
+        with:
+          expo-version: latest
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Setup environment
+        run: |
+          cp .env.${{ needs.prepare-release.outputs.environment }} .env
+          echo "VERSION=${{ needs.prepare-release.outputs.version }}" >> .env
+
+      - name: Configure EAS
+        run: |
+          cat > eas.json << EOF
+          {
+            "cli": {
+              "version": ">= 5.0.0"
+            },
+            "build": {
+              "development": {
+                "distribution": "internal",
+                "ios": {
+                  "simulator": true
+                },
+                "android": {
+                  "buildType": "apk"
+                }
+              },
+              "staging": {
+                "distribution": "internal",
+                "channel": "staging",
+                "ios": {
+                  "buildConfiguration": "Release"
+                },
+                "android": {
+                  "buildType": "apk"
+                }
+              },
+              "production": {
+                "channel": "production",
+                "ios": {
+                  "buildConfiguration": "Release"
+                },
+                "android": {
+                  "buildType": "aab"
+                }
+              }
+            },
+            "submit": {
+              "production": {
+                "ios": {
+                  "appleId": "${{ secrets.APPLE_ID }}",
+                  "ascAppId": "${{ secrets.ASC_APP_ID }}",
+                  "appleTeamId": "${{ secrets.APPLE_TEAM_ID }}"
+                },
+                "android": {
+                  "serviceAccountKeyPath": "./google-play-key.json",
+                  "track": "production"
+                }
+              }
+            }
+          }
+          EOF
+
+      - name: Build ${{ matrix.platform }}
+        run: |
+          npx eas build \
+            --platform ${{ matrix.platform }} \
+            --profile ${{ needs.prepare-release.outputs.environment }} \
+            --non-interactive \
+            --no-wait
+
+      - name: Get build URL
+        id: build-url
+        run: |
+          BUILD_URL=$(npx eas build:list --platform ${{ matrix.platform }} --limit 1 --json | jq -r '.[0].buildUrl')
+          echo "url=$BUILD_URL" >> $GITHUB_OUTPUT
+
+  deploy-web:
+    name: Deploy Web App
+    runs-on: ubuntu-latest
+    needs: prepare-release
+    if: needs.prepare-release.outputs.environment != 'development'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Setup environment
+        run: |
+          cp .env.${{ needs.prepare-release.outputs.environment }} .env
+          echo "VERSION=${{ needs.prepare-release.outputs.version }}" >> .env
+
+      - name: Build web app
+        run: npx expo export --platform web
+
+      - name: Deploy to Firebase Hosting
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: ${{ secrets.GITHUB_TOKEN }}
+          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          channelId: ${{ needs.prepare-release.outputs.environment }}
+          projectId: styleai-${{ needs.prepare-release.outputs.environment }}
+
+  submit-stores:
+    name: Submit to App Stores
+    runs-on: ubuntu-latest
+    needs: [prepare-release, build-expo]
+    if: needs.prepare-release.outputs.environment == 'production'
+    strategy:
+      matrix:
+        platform: [ios, android]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Expo
+        uses: expo/expo-github-action@v8
+        with:
+          expo-version: latest
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Setup credentials
+        if: matrix.platform == 'android'
+        run: |
+          echo "${{ secrets.GOOGLE_PLAY_KEY }}" | base64 -d > google-play-key.json
+
+      - name: Submit to ${{ matrix.platform }} store
+        run: |
+          npx eas submit \
+            --platform ${{ matrix.platform }} \
+            --profile production \
+            --non-interactive
+
+  create-release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    needs: [prepare-release, build-expo, deploy-web]
+    if: github.ref_type == 'tag'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Generate release notes
+        id: release-notes
+        run: |
+          PREVIOUS_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+          if [[ -n "$PREVIOUS_TAG" ]]; then
+            COMMITS=$(git log $PREVIOUS_TAG..HEAD --pretty=format:"- %s (%h)" --no-merges)
+          else
+            COMMITS=$(git log --pretty=format:"- %s (%h)" --no-merges)
+          fi
+          
+          cat > release-notes.md << EOF
+          ## What's Changed
+          
+          $COMMITS
+          
+          ## Build Information
+          - Version: ${{ needs.prepare-release.outputs.version }}
+          - Environment: ${{ needs.prepare-release.outputs.environment }}
+          - Build Date: $(date -u +"%Y-%m-%d %H:%M:%S UTC")
+          
+          ## Downloads
+          - iOS: Check TestFlight
+          - Android: Check Google Play Console
+          - Web: https://styleai-${{ needs.prepare-release.outputs.environment }}.web.app
+          
+          ---
+          Full Changelog: $PREVIOUS_TAG...${{ github.ref_name }}
+          EOF
+
+      - name: Create release
+        uses: softprops/action-gh-release@v2
+        with:
+          body_path: release-notes.md
+          draft: false
+          prerelease: ${{ needs.prepare-release.outputs.environment != 'production' }}
+          generate_release_notes: true
+
+  notify-deployment:
+    name: Notify Deployment
+    runs-on: ubuntu-latest
+    needs: [prepare-release, build-expo, deploy-web]
+    if: always()
+    steps:
+      - name: Send notification
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          text: |
+            Deployment ${{ needs.prepare-release.outputs.version }} to ${{ needs.prepare-release.outputs.environment }}
+            Status: ${{ job.status }}
+            Actor: ${{ github.actor }}
+            Commit: ${{ github.sha }}
+          webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+        if: always()

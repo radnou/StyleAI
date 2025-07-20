@@ -1,0 +1,174 @@
+{
+  "dashboards": {
+    "production": {
+      "name": "StyleAI Production Dashboard",
+      "widgets": [
+        {
+          "id": "active_users",
+          "type": "metric",
+          "title": "Daily Active Users",
+          "query": "firebase.analytics.daily_active_users",
+          "timeRange": "24h",
+          "alertThreshold": {
+            "critical": 100,
+            "warning": 500
+          }
+        },
+        {
+          "id": "crash_rate",
+          "type": "metric",
+          "title": "Crash-Free Sessions",
+          "query": "firebase.crashlytics.crash_free_sessions",
+          "timeRange": "24h",
+          "alertThreshold": {
+            "critical": 95,
+            "warning": 98
+          }
+        },
+        {
+          "id": "response_time",
+          "type": "metric",
+          "title": "API Response Time",
+          "query": "firebase.functions.execution_time_p95",
+          "timeRange": "1h",
+          "alertThreshold": {
+            "critical": 5000,
+            "warning": 2000
+          }
+        },
+        {
+          "id": "error_rate",
+          "type": "metric",
+          "title": "Error Rate",
+          "query": "sentry.error_rate",
+          "timeRange": "1h",
+          "alertThreshold": {
+            "critical": 5,
+            "warning": 2
+          }
+        },
+        {
+          "id": "storage_usage",
+          "type": "metric",
+          "title": "Storage Usage",
+          "query": "firebase.storage.total_bytes",
+          "timeRange": "24h",
+          "alertThreshold": {
+            "critical": "90%",
+            "warning": "75%"
+          }
+        },
+        {
+          "id": "billing_usage",
+          "type": "metric",
+          "title": "Daily Billing",
+          "query": "firebase.billing.daily_cost",
+          "timeRange": "24h",
+          "alertThreshold": {
+            "critical": 100,
+            "warning": 75
+          }
+        }
+      ]
+    },
+    "staging": {
+      "name": "StyleAI Staging Dashboard",
+      "widgets": [
+        {
+          "id": "test_coverage",
+          "type": "metric",
+          "title": "Test Coverage",
+          "query": "ci.test_coverage",
+          "timeRange": "24h",
+          "alertThreshold": {
+            "critical": 80,
+            "warning": 90
+          }
+        },
+        {
+          "id": "build_success_rate",
+          "type": "metric",
+          "title": "Build Success Rate",
+          "query": "eas.build_success_rate",
+          "timeRange": "7d",
+          "alertThreshold": {
+            "critical": 85,
+            "warning": 95
+          }
+        },
+        {
+          "id": "deployment_frequency",
+          "type": "metric",
+          "title": "Deployment Frequency",
+          "query": "eas.deployments_per_day",
+          "timeRange": "7d"
+        }
+      ]
+    }
+  },
+  "alerts": [
+    {
+      "id": "high_crash_rate",
+      "name": "High Crash Rate Alert",
+      "condition": "firebase.crashlytics.crash_free_sessions < 95",
+      "severity": "critical",
+      "channels": ["email", "slack"],
+      "runbook": "https://docs.styleai.com/runbooks/high-crash-rate"
+    },
+    {
+      "id": "slow_api_response",
+      "name": "Slow API Response Alert",
+      "condition": "firebase.functions.execution_time_p95 > 5000",
+      "severity": "warning",
+      "channels": ["slack"],
+      "runbook": "https://docs.styleai.com/runbooks/slow-api-response"
+    },
+    {
+      "id": "high_error_rate",
+      "name": "High Error Rate Alert",
+      "condition": "sentry.error_rate > 5",
+      "severity": "critical",
+      "channels": ["email", "slack", "pagerduty"],
+      "runbook": "https://docs.styleai.com/runbooks/high-error-rate"
+    },
+    {
+      "id": "storage_quota_warning",
+      "name": "Storage Quota Warning",
+      "condition": "firebase.storage.usage_percentage > 75",
+      "severity": "warning",
+      "channels": ["email"],
+      "runbook": "https://docs.styleai.com/runbooks/storage-quota"
+    },
+    {
+      "id": "billing_spike",
+      "name": "Billing Spike Alert",
+      "condition": "firebase.billing.daily_cost > 100",
+      "severity": "warning",
+      "channels": ["email", "slack"],
+      "runbook": "https://docs.styleai.com/runbooks/billing-spike"
+    },
+    {
+      "id": "user_drop",
+      "name": "Significant User Drop",
+      "condition": "firebase.analytics.daily_active_users < 100",
+      "severity": "warning",
+      "channels": ["slack"],
+      "runbook": "https://docs.styleai.com/runbooks/user-drop"
+    }
+  ],
+  "notification_channels": {
+    "email": {
+      "type": "email",
+      "addresses": ["alerts@styleai.com", "dev-team@styleai.com"]
+    },
+    "slack": {
+      "type": "slack",
+      "webhook": "https://hooks.slack.com/services/YOUR/SLACK/WEBHOOK",
+      "channel": "#alerts"
+    },
+    "pagerduty": {
+      "type": "pagerduty",
+      "integration_key": "YOUR_PAGERDUTY_INTEGRATION_KEY"
+    }
+  }
+}

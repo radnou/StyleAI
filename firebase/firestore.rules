@@ -1,0 +1,171 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // === HELPER FUNCTIONS ===
+    
+    // Check if user is authenticated and owns the resource
+    function isOwner(userId) {
+      return request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Check if email is verified
+    function isVerified() {
+      return request.auth != null && request.auth.token.email_verified == true;
+    }
+    
+    // Check if user has premium license
+    function isPremium() {
+      return request.auth != null && 
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)/licenses/premium);
+    }
+    
+    // Validate user data structure
+    function isValidUserData() {
+      return request.resource.data.keys().hasAll(['email', 'createdAt']) &&
+             request.resource.data.email is string &&
+             request.resource.data.email.matches('^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$') &&
+             request.resource.data.createdAt is timestamp;
+    }
+    
+    // Validate wardrobe item data
+    function isValidWardrobeItem() {
+      return request.resource.data.keys().hasAll(['name', 'category', 'createdAt']) &&
+             request.resource.data.name is string &&
+             request.resource.data.name.size() > 0 &&
+             request.resource.data.name.size() <= 100 &&
+             request.resource.data.category is string &&
+             request.resource.data.category in ['tops', 'bottoms', 'dresses', 'outerwear', 'shoes', 'accessories'] &&
+             request.resource.data.createdAt is timestamp;
+    }
+    
+    // Check rate limiting (basic)
+    function checkRateLimit() {
+      return request.time > resource.data.lastModified + duration.value(1, 's');
+    }
+    
+    // Validate file upload metadata
+    function isValidFileMetadata() {
+      return request.resource.data.size() < 10485760 && // 10MB limit
+             request.resource.data.contentType.matches('image/.*');
+    }
+    
+    // === USER DOCUMENTS ===
+    match /users/{userId} {
+      allow read: if isOwner(userId) && isVerified();
+      
+      allow create: if isOwner(userId) && 
+                       isVerified() && 
+                       isValidUserData() &&
+                       request.resource.data.uid == userId;
+      
+      allow update: if isOwner(userId) && 
+                       isVerified() && 
+                       isValidUserData() &&
+                       checkRateLimit();
+      
+      allow delete: if false; // Prevent user deletion via client
+      
+      // === USER WARDROBE ITEMS ===
+      match /wardrobe/{itemId} {
+        allow read: if isOwner(userId) && isVerified();
+        
+        allow create: if isOwner(userId) && 
+                         isVerified() && 
+                         isValidWardrobeItem() &&
+                         request.resource.data.userId == userId;
+        
+        allow update: if isOwner(userId) && 
+                         isVerified() && 
+                         isValidWardrobeItem() &&
+                         checkRateLimit() &&
+                         request.resource.data.userId == userId;
+        
+        allow delete: if isOwner(userId) && isVerified();
+      }
+      
+      // === STYLE ANALYSES ===
+      match /styleAnalyses/{analysisId} {
+        allow read: if isOwner(userId) && isVerified();
+        
+        allow create: if isOwner(userId) && 
+                         isVerified() &&
+                         request.resource.data.keys().hasAll(['userId', 'createdAt']) &&
+                         request.resource.data.userId == userId &&
+                         request.resource.data.createdAt is timestamp;
+        
+        allow update: if isOwner(userId) && 
+                         isVerified() && 
+                         checkRateLimit() &&
+                         request.resource.data.userId == userId;
+        
+        allow delete: if isOwner(userId) && isVerified();
+      }
+      
+      // === USER OUTFITS ===
+      match /outfits/{outfitId} {
+        allow read: if isOwner(userId) && isVerified();
+        
+        allow create: if isOwner(userId) && 
+                         isVerified() &&
+                         request.resource.data.keys().hasAll(['name', 'userId', 'createdAt']) &&
+                         request.resource.data.name is string &&
+                         request.resource.data.name.size() > 0 &&
+                         request.resource.data.name.size() <= 100 &&
+                         request.resource.data.userId == userId &&
+                         request.resource.data.createdAt is timestamp;
+        
+        allow update: if isOwner(userId) && 
+                         isVerified() && 
+                         checkRateLimit() &&
+                         request.resource.data.userId == userId;
+        
+        allow delete: if isOwner(userId) && isVerified();
+      }
+      
+      // === USER PREFERENCES ===
+      match /preferences/{preferenceId} {
+        allow read, write: if isOwner(userId) && isVerified();
+      }
+      
+      // === LICENSES SUBCOLLECTION ===
+      match /licenses/{licenseId} {
+        allow read: if isOwner(userId) && isVerified();
+        allow write: if false; // Only backend can write licenses
+      }
+      
+      // === USER ANALYTICS (read-only for user) ===
+      match /analytics/{analyticsId} {
+        allow read: if isOwner(userId) && isVerified();
+        allow write: if false; // Only server can write analytics
+      }
+    }
+    
+    // === PREMIUM STYLE ANALYSES ===
+    match /analyses/{analysisId} {
+      allow read: if isOwner(resource.data.userId) && isVerified() && isPremium();
+      allow write: if false; // Only backend can write analyses
+    }
+    
+    // === PUBLIC STYLE TEMPLATES (read-only) ===
+    match /styleTemplates/{templateId} {
+      allow read: if request.auth != null && isVerified();
+      allow write: if false; // Only admins can manage templates
+    }
+    
+    // === ADMIN COLLECTIONS ===
+    match /admin/{document=**} {
+      allow read, write: if false; // No client access to admin data
+    }
+    
+    // === SYSTEM COLLECTIONS ===
+    match /system/{document=**} {
+      allow read, write: if false; // No client access to system data
+    }
+    
+    // === DENY ALL OTHER PATHS ===
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

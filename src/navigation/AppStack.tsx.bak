@@ -1,0 +1,379 @@
+import React, { useCallback, useMemo } from 'react';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { Platform } from 'react-native';
+
+import { AppStackParamList, ROUTE_NAMES, NAVIGATION_CONFIG } from './types';
+import { useScreenTracking, useTabBarVisibility } from './hooks';
+import { useAppStore } from '@/app/store';
+
+// Import tab icons (these would be your actual icon components)
+import { TabIcon } from './components/TabIcon';
+import { TabLabel } from './components/TabLabel';
+
+// Import stack navigators for each tab
+import { HomeStack } from './stacks/HomeStack';
+import { WardrobeStack } from './stacks/WardrobeStack';
+import { StylingStack } from './stacks/StylingStack';
+import { ProfileStack } from './stacks/ProfileStack';
+
+const Tab = createBottomTabNavigator<AppStackParamList>();
+
+/**
+ * App Stack Navigator with Bottom Tabs
+ * Main navigation for authenticated users
+ */
+export function AppStack() {
+  const { app, user } = useAppStore();
+  const { setTabBarVisibility } = useTabBarVisibility();
+  
+  useScreenTracking();
+
+  // Tab configuration
+  const tabConfig = useMemo(() => [
+    {
+      name: ROUTE_NAMES.APP.HOME_STACK,
+      component: HomeStack,
+      iconName: 'home',
+      label: 'Home',
+      badge: undefined,
+    },
+    {
+      name: ROUTE_NAMES.APP.WARDROBE_STACK,
+      component: WardrobeStack,
+      iconName: 'wardrobe',
+      label: 'Wardrobe',
+      badge: undefined,
+    },
+    {
+      name: ROUTE_NAMES.APP.STYLING_STACK,
+      component: StylingStack,
+      iconName: 'styling',
+      label: 'Styling',
+      badge: undefined,
+    },
+    {
+      name: ROUTE_NAMES.APP.PROFILE_STACK,
+      component: ProfileStack,
+      iconName: 'profile',
+      label: 'Profile',
+      badge: user.profile?.hasUnreadNotifications ? '!' : undefined,
+    },
+  ], [user.profile?.hasUnreadNotifications]);
+
+  // Create tab screen options
+  const createTabScreenOptions = useCallback((iconName: string, label: string, badge?: string) => ({
+    tabBarIcon: ({ focused, color, size }: { focused: boolean; color: string; size: number }) => (
+      <TabIcon
+        name={iconName}
+        focused={focused}
+        color={color}
+        size={size}
+        badge={badge}
+      />
+    ),
+    tabBarLabel: ({ focused, color }: { focused: boolean; color: string }) => (
+      <TabLabel
+        text={label}
+        focused={focused}
+        color={color}
+      />
+    ),
+    headerShown: false,
+    tabBarShowLabel: true,
+    tabBarBadge: badge,
+  }), []);
+
+  // Enhanced tab bar options
+  const tabBarOptions = useMemo(() => ({
+    ...NAVIGATION_CONFIG.TAB_BAR_OPTIONS,
+    tabBarStyle: {
+      ...NAVIGATION_CONFIG.TAB_BAR_OPTIONS.style,
+      backgroundColor: app.theme === 'dark' ? '#1C1C1E' : '#FFFFFF',
+      borderTopColor: app.theme === 'dark' ? '#38383A' : '#E5E5E7',
+    },
+    tabBarActiveTintColor: app.theme === 'dark' ? '#007AFF' : '#007AFF',
+    tabBarInactiveTintColor: app.theme === 'dark' ? '#8E8E93' : '#8E8E93',
+  }), [app.theme]);
+
+  return (
+    <Tab.Navigator
+      initialRouteName={ROUTE_NAMES.APP.HOME_STACK}
+      screenOptions={{
+        headerShown: false,
+        ...tabBarOptions,
+      }}
+      sceneContainerStyle={{
+        backgroundColor: app.theme === 'dark' ? '#000000' : '#FFFFFF',
+      }}
+    >
+      {tabConfig.map((tab) => (
+        <Tab.Screen
+          key={tab.name}
+          name={tab.name}
+          component={tab.component}
+          options={createTabScreenOptions(tab.iconName, tab.label, tab.badge)}
+          listeners={{
+            tabPress: (e) => {
+              // Track tab press analytics
+              console.log(`Tab pressed: ${tab.name}`);
+              
+              // Handle special tab press logic if needed
+              if (tab.name === ROUTE_NAMES.APP.STYLING_STACK) {
+                // Example: Check if user has premium access
+                if (!user.profile?.isPremium) {
+                  // Show premium upsell modal
+                  console.log('Show premium upsell for styling');
+                }
+              }
+            },
+          }}
+        />
+      ))}
+    </Tab.Navigator>
+  );
+}
+
+/**
+ * Enhanced App Stack with Dynamic Tabs
+ * Includes conditional tabs based on user permissions and features
+ */
+export function EnhancedAppStack() {
+  const { app, user } = useAppStore();
+  
+  useScreenTracking();
+
+  // Dynamic tab configuration based on user and app state
+  const tabConfig = useMemo(() => {
+    const baseTabs = [
+      {
+        name: ROUTE_NAMES.APP.HOME_STACK,
+        component: HomeStack,
+        iconName: 'home',
+        label: 'Home',
+        badge: undefined,
+        visible: true,
+      },
+      {
+        name: ROUTE_NAMES.APP.WARDROBE_STACK,
+        component: WardrobeStack,
+        iconName: 'wardrobe',
+        label: 'Wardrobe',
+        badge: undefined,
+        visible: true,
+      },
+      {
+        name: ROUTE_NAMES.APP.STYLING_STACK,
+        component: StylingStack,
+        iconName: 'styling',
+        label: 'Styling',
+        badge: undefined,
+        visible: app.features.betaFeatures || user.profile?.isPremium,
+      },
+      {
+        name: ROUTE_NAMES.APP.PROFILE_STACK,
+        component: ProfileStack,
+        iconName: 'profile',
+        label: 'Profile',
+        badge: user.profile?.hasUnreadNotifications ? '!' : undefined,
+        visible: true,
+      },
+    ];
+
+    return baseTabs.filter(tab => tab.visible);
+  }, [app.features.betaFeatures, user.profile?.isPremium, user.profile?.hasUnreadNotifications]);
+
+  // Advanced tab screen options with animations
+  const createAdvancedTabScreenOptions = useCallback((
+    iconName: string,
+    label: string,
+    badge?: string
+  ) => ({
+    tabBarIcon: ({ focused, color, size }: { focused: boolean; color: string; size: number }) => (
+      <TabIcon
+        name={iconName}
+        focused={focused}
+        color={color}
+        size={size}
+        badge={badge}
+        animated={true}
+      />
+    ),
+    tabBarLabel: ({ focused, color }: { focused: boolean; color: string }) => (
+      <TabLabel
+        text={label}
+        focused={focused}
+        color={color}
+        animated={true}
+      />
+    ),
+    headerShown: false,
+    tabBarShowLabel: true,
+    tabBarBadge: badge,
+    tabBarButtonStyle: {
+      paddingVertical: Platform.OS === 'ios' ? 4 : 8,
+    },
+    tabBarIconStyle: {
+      marginBottom: Platform.OS === 'ios' ? -4 : 0,
+    },
+    tabBarLabelStyle: {
+      fontSize: 12,
+      fontWeight: '600',
+      marginBottom: Platform.OS === 'ios' ? 4 : 0,
+    },
+  }), []);
+
+  // Dynamic tab bar options with theme support
+  const dynamicTabBarOptions = useMemo(() => ({
+    ...NAVIGATION_CONFIG.TAB_BAR_OPTIONS,
+    tabBarStyle: {
+      ...NAVIGATION_CONFIG.TAB_BAR_OPTIONS.style,
+      backgroundColor: app.theme === 'dark' ? '#1C1C1E' : '#FFFFFF',
+      borderTopColor: app.theme === 'dark' ? '#38383A' : '#E5E5E7',
+      elevation: Platform.OS === 'android' ? 8 : 0,
+      shadowColor: app.theme === 'dark' ? '#000000' : '#000000',
+      shadowOffset: { width: 0, height: -2 },
+      shadowOpacity: app.theme === 'dark' ? 0.3 : 0.1,
+      shadowRadius: 4,
+    },
+    tabBarActiveTintColor: '#007AFF',
+    tabBarInactiveTintColor: app.theme === 'dark' ? '#8E8E93' : '#8E8E93',
+    tabBarHideOnKeyboard: Platform.OS === 'android',
+    tabBarVisibilityAnimationConfig: {
+      show: {
+        animation: 'timing',
+        config: {
+          duration: 225,
+        },
+      },
+      hide: {
+        animation: 'timing',
+        config: {
+          duration: 175,
+        },
+      },
+    },
+  }), [app.theme]);
+
+  return (
+    <Tab.Navigator
+      initialRouteName={ROUTE_NAMES.APP.HOME_STACK}
+      screenOptions={{
+        headerShown: false,
+        ...dynamicTabBarOptions,
+      }}
+      sceneContainerStyle={{
+        backgroundColor: app.theme === 'dark' ? '#000000' : '#FFFFFF',
+      }}
+      backBehavior="history"
+    >
+      {tabConfig.map((tab) => (
+        <Tab.Screen
+          key={tab.name}
+          name={tab.name}
+          component={tab.component}
+          options={createAdvancedTabScreenOptions(tab.iconName, tab.label, tab.badge)}
+          listeners={{
+            tabPress: (e) => {
+              // Track tab press analytics
+              console.log(`Tab pressed: ${tab.name}`);
+              
+              // Handle premium feature access
+              if (tab.name === ROUTE_NAMES.APP.STYLING_STACK) {
+                if (!user.profile?.isPremium && !app.features.betaFeatures) {
+                  e.preventDefault();
+                  // Show premium upsell
+                  console.log('Show premium upsell for styling');
+                }
+              }
+            },
+            tabLongPress: (e) => {
+              // Handle long press for tab shortcuts
+              console.log(`Tab long pressed: ${tab.name}`);
+              // Could show tab-specific shortcuts or options
+            },
+          }}
+        />
+      ))}
+    </Tab.Navigator>
+  );
+}
+
+/**
+ * App Stack with Gesture Handler
+ * Includes swipe gestures for tab navigation
+ */
+export function GestureAwareAppStack() {
+  const { app } = useAppStore();
+  
+  useScreenTracking();
+
+  // Handle swipe gestures for tab navigation
+  const handleSwipeGesture = useCallback((direction: 'left' | 'right') => {
+    console.log(`Swipe gesture detected: ${direction}`);
+    // Implement tab switching logic based on swipe
+  }, []);
+
+  return (
+    <Tab.Navigator
+      initialRouteName={ROUTE_NAMES.APP.HOME_STACK}
+      screenOptions={{
+        headerShown: false,
+        ...NAVIGATION_CONFIG.TAB_BAR_OPTIONS,
+        tabBarStyle: {
+          ...NAVIGATION_CONFIG.TAB_BAR_OPTIONS.style,
+          backgroundColor: app.theme === 'dark' ? '#1C1C1E' : '#FFFFFF',
+          borderTopColor: app.theme === 'dark' ? '#38383A' : '#E5E5E7',
+        },
+      }}
+      sceneContainerStyle={{
+        backgroundColor: app.theme === 'dark' ? '#000000' : '#FFFFFF',
+      }}
+    >
+      <Tab.Screen
+        name={ROUTE_NAMES.APP.HOME_STACK}
+        component={HomeStack}
+        options={{
+          tabBarIcon: ({ focused, color, size }) => (
+            <TabIcon name="home" focused={focused} color={color} size={size} />
+          ),
+          tabBarLabel: 'Home',
+        }}
+      />
+      
+      <Tab.Screen
+        name={ROUTE_NAMES.APP.WARDROBE_STACK}
+        component={WardrobeStack}
+        options={{
+          tabBarIcon: ({ focused, color, size }) => (
+            <TabIcon name="wardrobe" focused={focused} color={color} size={size} />
+          ),
+          tabBarLabel: 'Wardrobe',
+        }}
+      />
+      
+      <Tab.Screen
+        name={ROUTE_NAMES.APP.STYLING_STACK}
+        component={StylingStack}
+        options={{
+          tabBarIcon: ({ focused, color, size }) => (
+            <TabIcon name="styling" focused={focused} color={color} size={size} />
+          ),
+          tabBarLabel: 'Styling',
+        }}
+      />
+      
+      <Tab.Screen
+        name={ROUTE_NAMES.APP.PROFILE_STACK}
+        component={ProfileStack}
+        options={{
+          tabBarIcon: ({ focused, color, size }) => (
+            <TabIcon name="profile" focused={focused} color={color} size={size} />
+          ),
+          tabBarLabel: 'Profile',
+        }}
+      />
+    </Tab.Navigator>
+  );
+}
+
+export default AppStack;

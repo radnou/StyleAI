@@ -1,0 +1,131 @@
+module.exports = {
+  preset: 'react-native',
+  setupFilesAfterEnv: [
+    './jest.setup.js',
+    '<rootDir>/src/__tests__/setup/test-helpers.ts',
+  ],
+  moduleNameMapper: {
+    '^@/(.*)$': '<rootDir>/src/$1',
+    '^@core/(.*)$': '<rootDir>/src/core/$1',
+    '^@features/(.*)$': '<rootDir>/src/features/$1',
+    '^@shared/(.*)$': '<rootDir>/src/shared/$1',
+    '^@navigation/(.*)$': '<rootDir>/src/navigation/$1',
+    '^@store/(.*)$': '<rootDir>/src/store/$1',
+    '^@services/(.*)$': '<rootDir>/src/services/$1',
+    '\\.svg$': '<rootDir>/src/__tests__/mocks/svgMock.js',
+    '\\.(jpg|jpeg|png|gif|webp)$': '<rootDir>/src/__tests__/mocks/fileMock.js',
+  },
+  testMatch: [
+    '**/__tests__/**/*.test.ts',
+    '**/__tests__/**/*.test.tsx',
+    '**/__tests__/**/*.spec.ts',
+    '**/__tests__/**/*.spec.tsx',
+  ],
+  testPathIgnorePatterns: [
+    '/node_modules/',
+    '/.expo/',
+    '/dist/',
+    '/coverage/',
+    '/firebase/functions/node_modules/',
+  ],
+  collectCoverageFrom: [
+    'src/**/*.{ts,tsx}',
+    '!src/**/*.d.ts',
+    '!src/**/*.stories.tsx',
+    '!src/**/index.ts',
+    '!src/**/__tests__/**',
+    '!src/**/__mocks__/**',
+    '!src/**/types/**',
+    '!src/navigation/types.ts',
+    '!src/core/config/environment.ts',
+    '!index.ts',
+    '!App.tsx',
+  ],
+  coverageThreshold: {
+    global: {
+      branches: 80,
+      functions: 80,
+      lines: 80,
+      statements: 80,
+    },
+  },
+  coverageReporters: [
+    'text',
+    'text-summary',
+    'lcov',
+    'html',
+    'json',
+    'cobertura',
+  ],
+  testEnvironment: 'jsdom',
+  testEnvironmentOptions: {
+    url: 'http://localhost',
+  },
+  transform: {
+    '^.+\\.(js|jsx|ts|tsx)$': 'babel-jest',
+  },
+  transformIgnorePatterns: [
+    'node_modules/(?!(react-native|@react-native|expo|@expo|@unimodules|@tamagui|@react-navigation|react-native-reanimated|react-native-gesture-handler|react-native-screens|react-native-safe-area-context|@react-native-firebase|@react-native-google-signin|@react-native-async-storage)/)',
+  ],
+  globals: {
+    __DEV__: true,
+  },
+  fakeTimers: {
+    enableGlobally: true,
+  },
+  testTimeout: 30000,
+  maxWorkers: '50%',
+  bail: false,
+  verbose: true,
+  clearMocks: true,
+  restoreMocks: true,
+  resetMocks: true,
+  resetModules: true,
+  watchPlugins: [
+    'jest-watch-typeahead/filename',
+    'jest-watch-typeahead/testname',
+  ],
+  projects: [
+    {
+      displayName: 'unit',
+      testMatch: ['<rootDir>/src/**/__tests__/unit/**/*.test.{ts,tsx}'],
+      testEnvironment: 'node',
+    },
+    {
+      displayName: 'integration',
+      testMatch: ['<rootDir>/src/**/__tests__/integration/**/*.test.{ts,tsx}'],
+      testEnvironment: 'jsdom',
+    },
+    {
+      displayName: 'e2e',
+      testMatch: ['<rootDir>/src/**/__tests__/e2e/**/*.test.{ts,tsx}'],
+      testEnvironment: 'jsdom',
+      testTimeout: 60000,
+    },
+  ],
+  reporters: [
+    'default',
+    [
+      'jest-html-reporters',
+      {
+        publicPath: './coverage/html-report',
+        filename: 'test-report.html',
+        pageTitle: 'StyleAI Test Report',
+        expand: true,
+        openReport: false,
+      },
+    ],
+    [
+      'jest-junit',
+      {
+        outputDirectory: './coverage',
+        outputName: 'junit.xml',
+        ancestorSeparator: ' › ',
+        uniqueOutputName: 'false',
+        suiteNameTemplate: '{filepath}',
+        classNameTemplate: '{classname}',
+        titleTemplate: '{title}',
+      },
+    ],
+  ],
+};

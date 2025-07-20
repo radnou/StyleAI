@@ -1,0 +1,224 @@
+{
+  "app": {
+    "name": "StyleAI",
+    "subtitle": "AI-Powered Personal Stylist",
+    "description": {
+      "short": "Transform your style with AI-powered fashion recommendations tailored just for you.",
+      "long": "StyleAI is your personal AI stylist that analyzes your wardrobe, understands your style preferences, and provides personalized fashion recommendations. Using advanced computer vision and machine learning, StyleAI helps you:\n\n• Organize and categorize your entire wardrobe\n• Get personalized outfit suggestions for any occasion\n• Discover your unique style profile and morphology\n• Receive AI-powered fashion advice and trends\n• Shop smarter with curated recommendations\n• Build confidence in your personal style\n\nWhether you're preparing for a special event, refreshing your wardrobe, or just want to look your best every day, StyleAI makes fashion effortless and fun.\n\nKey Features:\n✓ Smart wardrobe organization with AI categorization\n✓ Personalized style analysis and recommendations\n✓ Outfit planning for any occasion\n✓ Color and style matching suggestions\n✓ Shopping recommendations based on your style\n✓ Body type and morphology analysis\n✓ Seasonal wardrobe planning\n✓ Style inspiration and trends\n\nJoin thousands of users who have transformed their style with StyleAI. Download now and discover your perfect look!"
+    },
+    "keywords": [
+      "fashion",
+      "style",
+      "AI",
+      "wardrobe",
+      "outfit",
+      "personal stylist",
+      "fashion advice",
+      "clothing",
+      "style guide",
+      "fashion trends",
+      "outfit planner",
+      "style analysis",
+      "fashion AI",
+      "wardrobe organizer",
+      "style recommendations"
+    ],
+    "category": {
+      "primary": "Lifestyle",
+      "secondary": "Fashion"
+    },
+    "age_rating": "4+",
+    "content_rating": "Everyone",
+    "privacy_policy_url": "https://styleai.com/privacy",
+    "terms_of_service_url": "https://styleai.com/terms",
+    "support_url": "https://styleai.com/support",
+    "marketing_url": "https://styleai.com"
+  },
+  "localization": {
+    "en-US": {
+      "name": "StyleAI",
+      "subtitle": "AI-Powered Personal Stylist",
+      "description": "Transform your style with AI-powered fashion recommendations tailored just for you.",
+      "keywords": "fashion,style,AI,wardrobe,outfit,personal stylist,fashion advice,clothing,style guide,fashion trends",
+      "promotional_text": "Discover your perfect style with AI-powered fashion recommendations!"
+    },
+    "fr-FR": {
+      "name": "StyleAI",
+      "subtitle": "Styliste Personnel IA",
+      "description": "Transformez votre style avec des recommandations mode personnalisées par l'IA.",
+      "keywords": "mode,style,IA,garde-robe,tenue,styliste personnel,conseil mode,vêtements,guide style,tendances mode",
+      "promotional_text": "Découvrez votre style parfait avec des recommandations mode personnalisées par l'IA!"
+    },
+    "es-ES": {
+      "name": "StyleAI",
+      "subtitle": "Estilista Personal IA",
+      "description": "Transforma tu estilo con recomendaciones de moda personalizadas por IA.",
+      "keywords": "moda,estilo,IA,armario,outfit,estilista personal,consejo moda,ropa,guía estilo,tendencias moda",
+      "promotional_text": "¡Descubre tu estilo perfecto con recomendaciones de moda personalizadas por IA!"
+    }
+  },
+  "screenshots": {
+    "iphone_6.5": [
+      {
+        "filename": "01_onboarding_welcome.png",
+        "title": "Welcome to StyleAI",
+        "description": "Your personal AI stylist awaits"
+      },
+      {
+        "filename": "02_wardrobe_organization.png",
+        "title": "Smart Wardrobe Organization",
+        "description": "AI-powered categorization of your clothes"
+      },
+      {
+        "filename": "03_style_analysis.png",
+        "title": "Personal Style Analysis",
+        "description": "Discover your unique style profile"
+      },
+      {
+        "filename": "04_outfit_suggestions.png",
+        "title": "Personalized Outfit Suggestions",
+        "description": "Perfect outfits for every occasion"
+      },
+      {
+        "filename": "05_styling_chat.png",
+        "title": "AI Style Assistant",
+        "description": "Get instant fashion advice"
+      }
+    ],
+    "iphone_5.5": [
+      {
+        "filename": "01_onboarding_welcome_5.5.png",
+        "title": "Welcome to StyleAI"
+      },
+      {
+        "filename": "02_wardrobe_organization_5.5.png",
+        "title": "Smart Wardrobe"
+      },
+      {
+        "filename": "03_style_analysis_5.5.png",
+        "title": "Style Analysis"
+      },
+      {
+        "filename": "04_outfit_suggestions_5.5.png",
+        "title": "Outfit Suggestions"
+      }
+    ],
+    "ipad_pro_12.9": [
+      {
+        "filename": "01_ipad_dashboard.png",
+        "title": "Complete Style Dashboard",
+        "description": "Full wardrobe overview on iPad"
+      },
+      {
+        "filename": "02_ipad_wardrobe.png",
+        "title": "Expanded Wardrobe View",
+        "description": "See more of your clothes at once"
+      },
+      {
+        "filename": "03_ipad_styling.png",
+        "title": "Enhanced Styling Experience",
+        "description": "More space for outfit planning"
+      }
+    ],
+    "android_phone": [
+      {
+        "filename": "01_android_welcome.png",
+        "title": "Welcome to StyleAI"
+      },
+      {
+        "filename": "02_android_wardrobe.png",
+        "title": "Smart Wardrobe"
+      },
+      {
+        "filename": "03_android_analysis.png",
+        "title": "Style Analysis"
+      },
+      {
+        "filename": "04_android_outfits.png",
+        "title": "Outfit Suggestions"
+      },
+      {
+        "filename": "05_android_chat.png",
+        "title": "AI Style Assistant"
+      }
+    ],
+    "android_tablet": [
+      {
+        "filename": "01_tablet_dashboard.png",
+        "title": "Style Dashboard"
+      },
+      {
+        "filename": "02_tablet_wardrobe.png",
+        "title": "Wardrobe Overview"
+      }
+    ]
+  },
+  "app_preview": {
+    "iphone": {
+      "filename": "styleai_preview_iphone.mp4",
+      "duration": 30,
+      "description": "See StyleAI in action on iPhone"
+    },
+    "ipad": {
+      "filename": "styleai_preview_ipad.mp4",
+      "duration": 30,
+      "description": "Experience StyleAI on iPad"
+    }
+  },
+  "icon": {
+    "filename": "app_icon.png",
+    "sizes": [
+      "20x20",
+      "29x29",
+      "40x40",
+      "58x58",
+      "60x60",
+      "76x76",
+      "80x80",
+      "87x87",
+      "120x120",
+      "152x152",
+      "167x167",
+      "180x180",
+      "1024x1024"
+    ]
+  },
+  "pricing": {
+    "model": "freemium",
+    "free_features": [
+      "Basic wardrobe organization",
+      "5 AI analyses per month",
+      "Basic outfit suggestions"
+    ],
+    "premium_features": [
+      "Unlimited AI analyses",
+      "Advanced style recommendations",
+      "Personal shopping suggestions",
+      "Seasonal wardrobe planning",
+      "Priority customer support"
+    ],
+    "subscription_tiers": [
+      {
+        "id": "premium_monthly",
+        "name": "Premium Monthly",
+        "price": "$9.99",
+        "duration": "1 month",
+        "features": "all_premium"
+      },
+      {
+        "id": "premium_yearly",
+        "name": "Premium Yearly",
+        "price": "$99.99",
+        "duration": "1 year",
+        "features": "all_premium",
+        "savings": "17%"
+      }
+    ]
+  },
+  "release_notes": {
+    "v1.0.0": {
+      "title": "Welcome to StyleAI!",
+      "description": "We're excited to launch StyleAI, your personal AI-powered stylist! This initial release includes:\n\n• Smart wardrobe organization with AI categorization\n• Personal style analysis and morphology detection\n• AI-powered outfit suggestions for any occasion\n• Interactive style chat assistant\n• Comprehensive onboarding experience\n\nDownload now and start your style transformation journey!"
+    }
+  }
+}

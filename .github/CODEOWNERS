@@ -1,0 +1,42 @@
+# StyleAI Code Owners
+# These owners will be requested for review when someone opens a pull request.
+
+# Default owners for everything in the repo
+* @styleai-team
+
+# Core application
+/src/ @styleai-core
+
+# AI and ML related code
+/src/services/ai/ @styleai-ai-team
+/src/features/ai/ @styleai-ai-team
+
+# Authentication and security
+/src/services/auth/ @styleai-security
+/src/features/auth/ @styleai-security
+/firebase/ @styleai-security
+
+# UI/UX Components
+/src/components/ @styleai-ui
+/src/screens/ @styleai-ui
+/src/styles/ @styleai-ui
+
+# Configuration and DevOps
+/.github/ @styleai-devops
+/firebase/ @styleai-devops
+/.husky/ @styleai-devops
+*.config.js @styleai-devops
+*.config.ts @styleai-devops
+
+# Testing
+/__tests__/ @styleai-qa
+*.test.ts @styleai-qa
+*.test.tsx @styleai-qa
+jest.* @styleai-qa
+
+# Documentation
+*.md @styleai-docs
+/docs/ @styleai-docs
+
+# Dependencies
+package*.json @styleai-core @styleai-security

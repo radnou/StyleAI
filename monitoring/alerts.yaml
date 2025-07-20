@@ -1,0 +1,161 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: styleai-alerts
+  namespace: monitoring
+data:
+  alerts.yaml: |
+    groups:
+      - name: styleai.production
+        rules:
+          - alert: HighCrashRate
+            expr: firebase_crashlytics_crash_free_sessions < 95
+            for: 5m
+            labels:
+              severity: critical
+              service: styleai
+              environment: production
+            annotations:
+              summary: "StyleAI crash rate is high"
+              description: "Crash-free sessions have dropped to {{ $value }}% in the last 5 minutes"
+              runbook_url: "https://docs.styleai.com/runbooks/high-crash-rate"
+
+          - alert: SlowAPIResponse
+            expr: firebase_functions_execution_time_p95 > 5000
+            for: 2m
+            labels:
+              severity: warning
+              service: styleai
+              environment: production
+            annotations:
+              summary: "API response time is slow"
+              description: "95th percentile response time is {{ $value }}ms"
+              runbook_url: "https://docs.styleai.com/runbooks/slow-api-response"
+
+          - alert: HighErrorRate
+            expr: sentry_error_rate > 5
+            for: 3m
+            labels:
+              severity: critical
+              service: styleai
+              environment: production
+            annotations:
+              summary: "Error rate is high"
+              description: "Error rate is {{ $value }}% in the last 3 minutes"
+              runbook_url: "https://docs.styleai.com/runbooks/high-error-rate"
+
+          - alert: StorageQuotaWarning
+            expr: firebase_storage_usage_percentage > 75
+            for: 10m
+            labels:
+              severity: warning
+              service: styleai
+              environment: production
+            annotations:
+              summary: "Storage quota warning"
+              description: "Storage usage is at {{ $value }}% of quota"
+              runbook_url: "https://docs.styleai.com/runbooks/storage-quota"
+
+          - alert: BillingSpike
+            expr: firebase_billing_daily_cost > 100
+            for: 1h
+            labels:
+              severity: warning
+              service: styleai
+              environment: production
+            annotations:
+              summary: "Daily billing spike detected"
+              description: "Daily billing cost is ${{ $value }}"
+              runbook_url: "https://docs.styleai.com/runbooks/billing-spike"
+
+          - alert: UserDropSignificant
+            expr: firebase_analytics_daily_active_users < 100
+            for: 30m
+            labels:
+              severity: warning
+              service: styleai
+              environment: production
+            annotations:
+              summary: "Significant drop in daily active users"
+              description: "Daily active users dropped to {{ $value }}"
+              runbook_url: "https://docs.styleai.com/runbooks/user-drop"
+
+          - alert: FirestoreConnectionIssue
+            expr: firebase_firestore_connection_errors > 10
+            for: 5m
+            labels:
+              severity: critical
+              service: styleai
+              environment: production
+            annotations:
+              summary: "Firestore connection issues"
+              description: "{{ $value }} Firestore connection errors in the last 5 minutes"
+              runbook_url: "https://docs.styleai.com/runbooks/firestore-connection"
+
+          - alert: GeminiAPIQuotaExceeded
+            expr: gemini_api_quota_usage > 90
+            for: 5m
+            labels:
+              severity: warning
+              service: styleai
+              environment: production
+            annotations:
+              summary: "Gemini API quota nearly exceeded"
+              description: "Gemini API usage is at {{ $value }}% of quota"
+              runbook_url: "https://docs.styleai.com/runbooks/gemini-quota"
+
+      - name: styleai.security
+        rules:
+          - alert: SuspiciousLoginActivity
+            expr: rate(firebase_auth_failed_logins[5m]) > 10
+            for: 3m
+            labels:
+              severity: warning
+              service: styleai
+              environment: production
+              category: security
+            annotations:
+              summary: "Suspicious login activity detected"
+              description: "{{ $value }} failed login attempts per second"
+              runbook_url: "https://docs.styleai.com/runbooks/suspicious-login"
+
+          - alert: RateLimitExceeded
+            expr: rate_limit_violations > 100
+            for: 2m
+            labels:
+              severity: warning
+              service: styleai
+              environment: production
+              category: security
+            annotations:
+              summary: "Rate limit violations detected"
+              description: "{{ $value }} rate limit violations in the last 2 minutes"
+              runbook_url: "https://docs.styleai.com/runbooks/rate-limit"
+
+      - name: styleai.business
+        rules:
+          - alert: ConversionRateDrop
+            expr: business_conversion_rate < 2
+            for: 1h
+            labels:
+              severity: warning
+              service: styleai
+              environment: production
+              category: business
+            annotations:
+              summary: "Conversion rate has dropped"
+              description: "Conversion rate is {{ $value }}%"
+              runbook_url: "https://docs.styleai.com/runbooks/conversion-rate"
+
+          - alert: RevenueTarget
+            expr: daily_revenue < 1000
+            for: 4h
+            labels:
+              severity: warning
+              service: styleai
+              environment: production
+              category: business
+            annotations:
+              summary: "Daily revenue below target"
+              description: "Daily revenue is ${{ $value }}"
+              runbook_url: "https://docs.styleai.com/runbooks/revenue-target"

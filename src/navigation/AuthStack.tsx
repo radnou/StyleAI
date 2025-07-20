@@ -1,0 +1,192 @@
+import React from 'react';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+
+import { AuthStackParamList, ROUTE_NAMES } from './types';
+import { useScreenTracking, useBackHandler } from './hooks';
+
+// Import screens
+import { 
+  WelcomeScreen,
+  LoginScreen,
+  RegisterScreen,
+  ForgotPasswordScreen,
+  ResetPasswordScreen,
+  EmailVerificationScreen
+} from '@/screens/auth';
+
+const Stack = createNativeStackNavigator<AuthStackParamList>();
+
+/**
+ * Authentication Stack Navigator
+ * Handles all authentication-related screens
+ */
+export function AuthStack() {
+  useScreenTracking();
+  useBackHandler();
+
+  return (
+    <Stack.Navigator
+      initialRouteName={ROUTE_NAMES.AUTH.WELCOME}
+      screenOptions={{
+        headerShown: false,
+        presentation: 'card',
+        animationTypeForReplace: 'push',
+        gestureEnabled: true,
+        fullScreenGestureEnabled: true,
+      }}
+    >
+      <Stack.Screen
+        name={ROUTE_NAMES.AUTH.WELCOME}
+        component={WelcomeScreen}
+        options={{
+          gestureEnabled: false, // Disable gesture for welcome screen
+          animationTypeForReplace: 'pop',
+        }}
+      />
+      
+      <Stack.Screen
+        name={ROUTE_NAMES.AUTH.LOGIN}
+        component={LoginScreen}
+        options={{
+          presentation: 'modal',
+          animationTypeForReplace: 'push',
+        }}
+      />
+      
+      <Stack.Screen
+        name={ROUTE_NAMES.AUTH.REGISTER}
+        component={RegisterScreen}
+        options={{
+          presentation: 'modal',
+          animationTypeForReplace: 'push',
+        }}
+      />
+      
+      <Stack.Screen
+        name={ROUTE_NAMES.AUTH.FORGOT_PASSWORD}
+        component={ForgotPasswordScreen}
+        options={{
+          presentation: 'modal',
+          animationTypeForReplace: 'push',
+        }}
+      />
+      
+      <Stack.Screen
+        name={ROUTE_NAMES.AUTH.RESET_PASSWORD}
+        component={ResetPasswordScreen}
+        options={{
+          presentation: 'modal',
+          animationTypeForReplace: 'push',
+        }}
+      />
+      
+      <Stack.Screen
+        name={ROUTE_NAMES.AUTH.EMAIL_VERIFICATION}
+        component={EmailVerificationScreen}
+        options={{
+          presentation: 'modal',
+          animationTypeForReplace: 'push',
+          gestureEnabled: false, // Disable gesture for email verification
+        }}
+      />
+    </Stack.Navigator>
+  );
+}
+
+/**
+ * Auth Stack with Enhanced Features
+ * Includes additional features like loading states and error handling
+ */
+export function EnhancedAuthStack() {
+  return (
+    <Stack.Navigator
+      initialRouteName={ROUTE_NAMES.AUTH.WELCOME}
+      screenOptions={{
+        headerShown: false,
+        presentation: 'card',
+        animationTypeForReplace: 'push',
+        gestureEnabled: true,
+        fullScreenGestureEnabled: true,
+        // Enhanced screen options
+        animation: 'slide_from_right',
+        customAnimationOnGesture: true,
+        freezeOnBlur: true,
+      }}
+    >
+      <Stack.Group
+        screenOptions={{
+          presentation: 'card',
+          animationTypeForReplace: 'pop',
+        }}
+      >
+        <Stack.Screen
+          name={ROUTE_NAMES.AUTH.WELCOME}
+          component={WelcomeScreen}
+          options={{
+            gestureEnabled: false,
+            animationTypeForReplace: 'pop',
+          }}
+        />
+      </Stack.Group>
+
+      <Stack.Group
+        screenOptions={{
+          presentation: 'modal',
+          animationTypeForReplace: 'push',
+          gestureEnabled: true,
+          fullScreenGestureEnabled: true,
+        }}
+      >
+        <Stack.Screen
+          name={ROUTE_NAMES.AUTH.LOGIN}
+          component={LoginScreen}
+          options={{
+            animation: 'slide_from_bottom',
+          }}
+        />
+        
+        <Stack.Screen
+          name={ROUTE_NAMES.AUTH.REGISTER}
+          component={RegisterScreen}
+          options={{
+            animation: 'slide_from_bottom',
+          }}
+        />
+        
+        <Stack.Screen
+          name={ROUTE_NAMES.AUTH.FORGOT_PASSWORD}
+          component={ForgotPasswordScreen}
+          options={{
+            animation: 'slide_from_right',
+          }}
+        />
+        
+        <Stack.Screen
+          name={ROUTE_NAMES.AUTH.RESET_PASSWORD}
+          component={ResetPasswordScreen}
+          options={{
+            animation: 'slide_from_right',
+          }}
+        />
+      </Stack.Group>
+
+      <Stack.Group
+        screenOptions={{
+          presentation: 'transparentModal',
+          animationTypeForReplace: 'push',
+          gestureEnabled: false,
+        }}
+      >
+        <Stack.Screen
+          name={ROUTE_NAMES.AUTH.EMAIL_VERIFICATION}
+          component={EmailVerificationScreen}
+          options={{
+            animation: 'fade',
+          }}
+        />
+      </Stack.Group>
+    </Stack.Navigator>
+  );
+}
+
+export default AuthStack;

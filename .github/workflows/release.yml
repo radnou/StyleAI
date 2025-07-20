@@ -1,0 +1,95 @@
+name: Release Management
+
+on:
+  workflow_dispatch:
+    inputs:
+      release-type:
+        description: 'Release type'
+        required: true
+        default: 'patch'
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+          - prerelease
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  create-release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.new-version }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Bump version
+        id: version
+        run: |
+          npm version ${{ github.event.inputs.release-type }} --no-git-tag-version
+          NEW_VERSION=$(node -p "require('./package.json').version")
+          echo "new-version=v$NEW_VERSION" >> $GITHUB_OUTPUT
+
+      - name: Generate changelog
+        run: |
+          npx conventional-changelog-cli -p angular -i CHANGELOG.md -s -r 0
+          
+      - name: Create release branch
+        run: |
+          git checkout -b release/${{ steps.version.outputs.new-version }}
+          git add package.json package-lock.json CHANGELOG.md
+          git commit -m "chore(release): ${{ steps.version.outputs.new-version }}"
+          git push origin release/${{ steps.version.outputs.new-version }}
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: release/${{ steps.version.outputs.new-version }}
+          title: "Release ${{ steps.version.outputs.new-version }}"
+          body: |
+            ## Release ${{ steps.version.outputs.new-version }}
+            
+            This PR was automatically created by the release workflow.
+            
+            ### Changes
+            See [CHANGELOG.md](CHANGELOG.md) for detailed changes.
+            
+            ### Checklist
+            - [ ] All tests pass
+            - [ ] Documentation updated
+            - [ ] Version bumped
+            - [ ] Changelog generated
+            
+            Once merged, this will trigger:
+            - Tag creation
+            - GitHub release
+            - Deployment to production
+          labels: |
+            release
+            automated
+          assignees: ${{ github.actor }}
+          
+      - name: Tag release
+        if: github.ref == 'refs/heads/master'
+        run: |
+          git tag -a ${{ steps.version.outputs.new-version }} -m "Release ${{ steps.version.outputs.new-version }}"
+          git push origin ${{ steps.version.outputs.new-version }}

@@ -1,0 +1,68 @@
+import React from 'react';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { useAppStore } from '@/store/store';
+
+/**
+ * Simple test component to verify navigation is working
+ */
+export function TestNavigation() {
+  const { auth, login, logout } = useAppStore();
+
+  const handleLogin = async () => {
+    await login('test@example.com', 'password');
+  };
+
+  const handleLogout = async () => {
+    await logout();
+  };
+
+  return (
+    <View style={styles.container}>
+      <Text style={styles.title}>Navigation Test</Text>
+      <Text style={styles.status}>
+        Auth Status: {auth.isAuthenticated ? 'Logged In' : 'Logged Out'}
+      </Text>
+      
+      {!auth.isAuthenticated ? (
+        <TouchableOpacity style={styles.button} onPress={handleLogin}>
+          <Text style={styles.buttonText}>Test Login</Text>
+        </TouchableOpacity>
+      ) : (
+        <TouchableOpacity style={styles.button} onPress={handleLogout}>
+          <Text style={styles.buttonText}>Test Logout</Text>
+        </TouchableOpacity>
+      )}
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+    backgroundColor: '#FFFFFF',
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 20,
+  },
+  status: {
+    fontSize: 16,
+    marginBottom: 30,
+    color: '#666666',
+  },
+  button: {
+    backgroundColor: '#007AFF',
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 8,
+  },
+  buttonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+});

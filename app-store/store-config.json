@@ -1,0 +1,157 @@
+{
+  "app_store_connect": {
+    "app_info": {
+      "bundle_id": "com.styleai.app",
+      "name": "StyleAI",
+      "primary_category": "LIFESTYLE",
+      "secondary_category": "FASHION",
+      "content_rights": "Does Not Use Third-Party Content",
+      "age_rating": {
+        "rating": "4+",
+        "advisories": []
+      }
+    },
+    "app_review_information": {
+      "contact_information": {
+        "first_name": "StyleAI",
+        "last_name": "Support",
+        "phone_number": "+1-555-STYLEAI",
+        "email": "appreview@styleai.com"
+      },
+      "demo_account": {
+        "username": "demo@styleai.com",
+        "password": "StyleAIDemo2024!",
+        "required": true
+      },
+      "notes": "StyleAI is a personal styling app that uses AI to analyze user wardrobes and provide fashion recommendations. The app requires camera permissions to analyze clothing items.\n\nDemo Account:\n- Email: demo@styleai.com\n- Password: StyleAIDemo2024!\n\nThe demo account includes sample wardrobe items and completed onboarding.\n\nKey features to test:\n1. Wardrobe organization (Add Item screen)\n2. Style analysis (Styling screen)\n3. AI chat assistant (accessible from Styling screen)\n4. Outfit suggestions (generated after style analysis)\n\nThe app uses Gemini AI API for style analysis and Firebase for backend services. All data is processed securely and in compliance with privacy regulations."
+    },
+    "version_information": {
+      "version": "1.0.0",
+      "build": "1",
+      "copyright": "© 2024 StyleAI Inc. All rights reserved.",
+      "trade_representative_contact": {
+        "first_name": "StyleAI",
+        "last_name": "Legal",
+        "address_line1": "123 Fashion Street",
+        "city": "San Francisco",
+        "state": "CA",
+        "postal_code": "94102",
+        "country": "US",
+        "phone": "+1-555-STYLEAI",
+        "email": "legal@styleai.com"
+      }
+    },
+    "pricing_and_availability": {
+      "price_tier": "Free",
+      "availability": {
+        "available_territories": [
+          "US", "CA", "GB", "FR", "DE", "ES", "IT", "AU", "JP", "KR"
+        ],
+        "b2b_app": false
+      },
+      "in_app_purchases": [
+        {
+          "reference_name": "Premium Monthly",
+          "product_id": "premium_monthly",
+          "type": "Auto-Renewable Subscription",
+          "price_tier": "Tier 10", 
+          "description": "Unlock unlimited AI style analyses, advanced recommendations, and premium features"
+        },
+        {
+          "reference_name": "Premium Yearly",
+          "product_id": "premium_yearly", 
+          "type": "Auto-Renewable Subscription",
+          "price_tier": "Tier 60",
+          "description": "Get a full year of premium StyleAI features at a discounted rate"
+        }
+      ]
+    }
+  },
+  "google_play_console": {
+    "app_details": {
+      "package_name": "com.styleai.app",
+      "title": "StyleAI",
+      "short_description": "AI-powered personal stylist for fashion recommendations",
+      "full_description": "Transform your style with StyleAI, the AI-powered personal stylist that analyzes your wardrobe and provides personalized fashion recommendations.\n\n🎯 SMART WARDROBE ORGANIZATION\n• AI-powered categorization of your clothes\n• Visual wardrobe management\n• Easy item tagging and organization\n\n🤖 AI STYLE ANALYSIS\n• Personal style profile generation\n• Body type and morphology analysis\n• Color palette recommendations\n\n👗 PERSONALIZED OUTFITS\n• Custom outfit suggestions for any occasion\n• Weather-appropriate recommendations\n• Style matching and coordination\n\n💬 AI STYLE ASSISTANT\n• Interactive fashion advice chat\n• Instant styling questions answered\n• Trend insights and tips\n\n✨ PREMIUM FEATURES\n• Unlimited AI analyses\n• Advanced style recommendations\n• Personal shopping suggestions\n• Priority customer support\n\nJoin thousands of users who have transformed their style with StyleAI. Download now and discover your perfect look!\n\n📧 Support: support@styleai.com\n🔒 Privacy Policy: https://styleai.com/privacy\n📄 Terms of Service: https://styleai.com/terms",
+      "content_rating": "Everyone",
+      "category": "LIFESTYLE",
+      "tags": ["fashion", "style", "ai", "wardrobe", "personal stylist"],
+      "website": "https://styleai.com",
+      "email": "support@styleai.com",
+      "privacy_policy": "https://styleai.com/privacy"
+    },
+    "graphic_assets": {
+      "app_icon": "512x512",
+      "feature_graphic": "1024x500",
+      "screenshots": {
+        "phone": ["1080x1920", "1080x1920", "1080x1920", "1080x1920"],
+        "tablet_7": ["1200x1920", "1200x1920"],
+        "tablet_10": ["1920x1200", "1920x1200"]
+      }
+    },
+    "pricing_and_distribution": {
+      "price": "Free",
+      "countries": [
+        "US", "CA", "GB", "FR", "DE", "ES", "IT", "AU", "JP", "KR", "BR", "MX", "IN"
+      ],
+      "content_guidelines": true,
+      "ads": false,
+      "in_app_products": [
+        {
+          "product_id": "premium_monthly",
+          "type": "subscription",
+          "price": "$9.99",
+          "billing_period": "month",
+          "title": "Premium Monthly",
+          "description": "Monthly premium subscription with unlimited AI analyses and advanced features"
+        },
+        {
+          "product_id": "premium_yearly", 
+          "type": "subscription",
+          "price": "$99.99",
+          "billing_period": "year",
+          "title": "Premium Yearly",
+          "description": "Yearly premium subscription with 17% savings and all premium features"
+        }
+      ]
+    },
+    "store_listing": {
+      "contact_details": {
+        "website": "https://styleai.com",
+        "email": "support@styleai.com",
+        "phone": "+1-555-STYLEAI",
+        "address": "123 Fashion Street, San Francisco, CA 94102, US"
+      },
+      "privacy_policy": "https://styleai.com/privacy"
+    }
+  },
+  "screenshots_plan": {
+    "themes": [
+      "Clean and modern interface",
+      "Fashion-forward color palette",
+      "User-friendly navigation",
+      "AI-powered features highlighted",
+      "Real wardrobe examples"
+    ],
+    "key_features_to_show": [
+      "Onboarding experience",
+      "Wardrobe organization",
+      "AI style analysis results",
+      "Outfit suggestions gallery",
+      "Chat interface with AI stylist",
+      "Premium features preview"
+    ],
+    "screenshot_specifications": {
+      "ios": {
+        "6.5_inch": "1284x2778 (iPhone 14 Pro Max)",
+        "5.5_inch": "1242x2208 (iPhone 8 Plus)",
+        "ipad_pro": "2048x2732 (iPad Pro 12.9-inch)"
+      },
+      "android": {
+        "phone": "1080x1920",
+        "tablet_7": "1200x1920", 
+        "tablet_10": "1920x1200"
+      }
+    }
+  }
+}

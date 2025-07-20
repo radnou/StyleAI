@@ -1,7 +1,9 @@
 # Learn more https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
 
-# dependencies
+# Dependencies
 node_modules/
+.pnp
+.pnp.js
 
 # Expo
 .expo/
@@ -9,14 +11,76 @@ dist/
 web-build/
 expo-env.d.ts
 
-# Native
-.kotlin/
-*.orig.*
+# React Native
+.expo/*
+npm-debug.*
 *.jks
 *.p8
 *.p12
 *.key
 *.mobileprovision
+
+# Environment variables - CRITICAL SECURITY
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.production
+.env.staging
+
+# Service Account Keys (NEVER COMMIT THESE)
+*service-account*.json
+google-service-account*.json
+firebase-adminsdk*.json
+
+# Apple Certificates & Provisioning Profiles
+*.cer
+*.p12
+*.mobileprovision
+*.certSigningRequest
+
+# Android
+*.apk
+*.aab
+*.jks
+*.keystore
+android/app/google-services.json
+
+# iOS
+ios/GoogleService-Info.plist
+ios/Pods/
+ios/*.xcworkspace/xcuserdata/
+ios/*.xcodeproj/xcuserdata/
+ios/*.xcodeproj/project.xcworkspace/xcuserdata/
+
+# Fastlane
+ios/fastlane/report.xml
+ios/fastlane/Preview.html
+ios/fastlane/screenshots
+android/fastlane/report.xml
+android/fastlane/Preview.html
+android/fastlane/screenshots
+
+# EAS
+eas-build-local-*
+
+# Firebase
+.firebaserc
+firebase-debug.log
+firestore-debug.log
+
+# Testing
+coverage/
+.nyc_output
+jest-stare/
+test-results/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
 
 # Metro
 .metro-health-check*
@@ -30,8 +94,33 @@ yarn-error.*
 .DS_Store
 *.pem
 
-# local env files
-.env*.local
-
-# typescript
+# TypeScript
 *.tsbuildinfo
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# Sentry
+.sentryclirc
+
+# Bundle artifact
+*.jsbundle
+
+# CocoaPods
+ios/Pods/
+
+# Android/IntelliJ
+android/.idea/
+android/.gradle/
+android/app/build/
+android/build/
+android/local.properties
+android/keystore.properties
+
+# Flipper
+FlipperFiles/
