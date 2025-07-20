@@ -131,7 +131,7 @@ jobs:
         run: npx expo export --platform all
 
       - name: Analyze bundle size
-        uses: github/super-linter@v5
+        uses: github/super-linter@v7
         with:
           DEFAULT_BRANCH: master
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
