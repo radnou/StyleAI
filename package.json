@@ -66,7 +66,7 @@
     "@react-navigation/native-stack": "^7.3.21",
     "@react-navigation/stack": "^7.4.2",
     "@tamagui/animations-react-native": "^1.130.8",
-    "@tamagui/core": "^1.130.8",
+    "@tamagui/core": "^1.134.4",
     "@types/uuid": "^10.0.0",
     "expo": "~53.0.17",
     "expo-auth-session": "~6.2.1",
